@@ -315,7 +315,7 @@ module.exports = class Analyse {
 	{
 
 		var fs = require("fs");
-		var content = fs.readFileSync("./heber_19409044_skypebot_ordi.json","utf8");
+		var content = fs.readFileSync("./Traitement_de_bot/heber_19409044_skypebot_ordi.json","utf8");
 		var contentTraite = content.replace(/'/g,'"');
 		const obj = JSON.parse(contentTraite);
 
