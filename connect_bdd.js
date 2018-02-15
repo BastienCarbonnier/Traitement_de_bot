@@ -1,12 +1,3 @@
-var mysql = require('mysql');
+var analyse = require('analyse.js');
 
-var connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "root",
-  database : "test"
-});
-
-exports = function(){
-    return connection;
-};
+console.log(Analyse.parse);
