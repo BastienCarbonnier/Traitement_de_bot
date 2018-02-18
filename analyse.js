@@ -27,7 +27,7 @@ var affirmation = require('./affirmations.js'),
 			finalMessage = question.process(message);
 		}
 		else{
-			finalMessage = answers.process(message);
+			finalMessage = affirmation.process(message);
 		}
 
 		return finalMessage;

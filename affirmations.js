@@ -1,4 +1,4 @@
-exports.parse = function(message)
+exports.process = function(message)
 {
 
     var fs = require("fs");
@@ -6,13 +6,14 @@ exports.parse = function(message)
     var contentTraite = content.replace(/'/g,'"');
     const obj = JSON.parse(contentTraite);
 
+
     var analyzed = getWordsFromMessage(message);
+    console.log(analyzed);
     var words = giveWord(analyzed);
     words = allRoleWord(words,obj);
 
     console.log(words);
-    const question = isQuestion(words);
-    if (question) words = modifIfQuestion(words);
+
 
     var finalMessage = "";
 
