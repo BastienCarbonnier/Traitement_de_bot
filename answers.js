@@ -1,23 +1,22 @@
-exports.process = function(message)
+exports.getTheAnswerToSendBack = function(first,second,result_isRelationTrue,words)
 {
+    var res = "";
+    console.log("deuxièmemot:"+second.word);
+    console.log("coderelation:"+result_isRelationTrue.code);
+    switch (result_isRelationTrue.code) {
+        case -1:
+        res += "Les mots " + first + " et " + second.word + " n'ont aucun lien. ";
+        break;
+        case 0:
+        res += "Relation " + result_isRelationTrue.relation + " négative entre les mots " + first + " et " + second.word;
+        break;
+        case 1:
+        res += "Les deux mots " + first + " et " + second.word + " ont bien le lien " + result_isRelationTrue.relation + ". ";
+        console.log(result_isRelationTrue.relation);
+        break;
+        default:
+        res += "Erreur de sortie isRelationTrue";
+    }
 
-    var fs = require("fs");
-    var content = fs.readFileSync("./Traitement_de_bot/heber_19409044_skypebot_ordi.json","utf8");
-    var contentTraite = content.replace(/'/g,'"');
-    const obj = JSON.parse(contentTraite);
-
-
-    var analyzed = getWordsFromMessage(message);
-    console.log(analyzed);
-    var words = giveWord(analyzed);
-    words = allRoleWord(words,obj);
-
-    console.log(words);
-    
-
-    var finalMessage = "";
-
-    finalMessage += printSentence(words,question,obj);
-
-    return finalMessage;
-}
+    return res;
+};

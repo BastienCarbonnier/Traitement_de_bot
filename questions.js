@@ -1,4 +1,5 @@
-
+var answers = require('./answers.js'),
+	tools 	= require('./tools.js');
 /* @return les mots du messages en un tableau */
 
 function getWordsFromMessage(message) {
@@ -39,7 +40,7 @@ static isRelationTrue (words, obj)
 function isRelationTrue(words, obj, mot2)
 {
 	const tempid = '4'; // l'idMot=4 correspond au mot "ordinateur"
-	let rel; let res = {};
+	var rel; var res = {};
 	for (rel in obj)
 	{
 		if (obj[rel]['idMot']==tempid & obj[rel]['mot']==mot2.word)
@@ -59,7 +60,7 @@ function isRelationTrue(words, obj, mot2)
 /* @return le second mot à analyser dans la phrase */
 function secondWord(words)
 {
-	let w;
+	var w;
 	for (w in words)
 	{
 		if ((words[w].role == "Nom") & (words[w].word != "ordinateur")) // à modifier plus tard
@@ -86,20 +87,6 @@ function modifIfQuestion(words)
 	return words;
 }
 
-/* @return true si le mot en paramètre est un déterminant */
-function isArticle(word)
-{
-	var tabArticles = [
-		"le","la","l","les",
-		"une","un","des",
-		"mon","ton","son","notre","votre","leur","ma","ta","sa","mes","tes","ses","nos","vos","leurs",
-		"ce","cet","cette","ces",
-		"chaque","quelques","plusieurs"
-	];
-
-	return (tabArticles.indexOf(word)!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
-}
-
 /* @return la relation adéquate au verbe donné */
 function laRelation(verbe)
 {
@@ -112,7 +99,7 @@ function laRelation(verbe)
 		return tabRelations.mot === verbe;
 	}
 
-	let res = tabRelations.find(t);
+	var res = tabRelations.find(t);
 
 	if (res) return res.relation;
 	return null;
@@ -130,7 +117,8 @@ function roleWord(word, obj)
 	var rel;
 	var temp = word.word;
 
-	if (isArticle(word.word)) return "Déterminant";
+	if (tools.isArticle(word.word)) return "article";
+	if (tools.isAdjectif(word.word)) return "adjectif";
 	if (laRelation(word.word)) return laRelation(word.word);
 
 	for (rel in obj)
@@ -181,37 +169,15 @@ function printSentenceAnalyzed(words)
 }
 
 /* @return un String contenant le message à afficher selon le cas (question, affirmation) */
-function printSentence(words,question,obj)
+function getAnswer(words,obj)
 {
-    var res = "";
-    if (question)
-    {
-        let first = "ordinateur";
-        let second = secondWord(words);
-        let result_isRelationTrue = isRelationTrue(words,obj,second);
-        console.log("deuxièmemot:"+second.word);
-        console.log("coderelation:"+result_isRelationTrue.code);
-        switch (result_isRelationTrue.code) {
-            case -1:
-            res += "Les mots " + first + " et " + second.word + " n'ont aucun lien. ";
-            break;
-            case 0:
-            res += "Relation " + result_isRelationTrue.relation + " négative entre les mots " + first + " et " + second.word;
-            break;
-            case 1:
-            res += "Les deux mots " + first + " et " + second.word + " ont bien le lien " + result_isRelationTrue.relation + ". ";
-            console.log(result_isRelationTrue.relation);
-            break;
-            default:
-            res += "Erreur de sortie isRelationTrue";
-        }
-    }
-    else
-    {
-        res += printSentenceAnalyzed(words);
-    }
-    return res;
+    var first = "ordinateur";
+    var second = secondWord(words);
+    var result_isRelationTrue = isRelationTrue(words,obj,second);
+
+    return answers.getTheAnswerToSendBack(first,second,result_isRelationTrue,words);
 }
+
 
 exports.process = function(message)
 {
@@ -232,7 +198,7 @@ exports.process = function(message)
 
     var finalMessage = "";
 
-    finalMessage += printSentence(words,true,obj);
+    finalMessage += getAnswer(words,obj);
 
     return finalMessage;
-}
+};

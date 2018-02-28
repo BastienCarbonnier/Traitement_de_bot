@@ -4,12 +4,10 @@
 var affirmation = require('./affirmations.js'),
 	question	= require('./questions.js'),
 	answers		= require('./answers.js'),
-	bdd = require('./functions_bdd.js');
+	tools 		= require('./tools.js') ;
+	//bdd = require('./functions_bdd.js');
 
-	function isQuestion(message)
-	{
-		return message.indexOf("?") != -1;
-	}
+
 	/* Fonction principal à appeler dans le bot
 	@param un String contenant le message de l'utilisateur
 	@return un String contenant le message à renvoyer à l'utilisateur */
@@ -23,7 +21,7 @@ var affirmation = require('./affirmations.js'),
 
 		var finalMessage = "";
 
-		if (isQuestion(message)){
+		if (tools.isQuestion(message)){
 			finalMessage = question.process(message);
 		}
 		else{
