@@ -1,11 +1,7 @@
-
-
-
-
-
 function getAdverbeAffAleatoire(){
     var listAdverbeAffirmatif = [
-        "toujours","assurément","certainement","probablement","vraisembablement", "souvent","presque tout le temps","eventuellement","exclusivement","parfois"
+        "toujours","assurément","certainement","probablement","vraisembablement",
+        "souvent","presque tout le temps","eventuellement","exclusivement","parfois"
     ];
 
     var numRandom = Math.floor(Math.random()*listAdverbeAffirmatif.length);
@@ -14,7 +10,8 @@ function getAdverbeAffAleatoire(){
 }
 function getAdverbeNegAleatoire(){
     var listAdverbeNegatif = [
-        "aucunement","jamais","nullement","pas","certainement pas","assurément pas","vraisembablement pas", "probablement pas"
+        "aucunement","jamais","nullement","pas","certainement pas","assurément pas",
+        "vraisembablement pas", "probablement pas"
     ];
 
     var numRandom = Math.floor(Math.random()*listAdverbeNegatif.length);
@@ -34,7 +31,7 @@ function getVerbeCaracAleatoire(){
 
 function getVerbeIsaAleatoire(){
     var listVerbeIsa = [
-        "a","peut-avoir","est-constitué"
+        "est",//"peut-avoir","est-constitué"
     ];
 
     var numRandom = Math.floor(Math.random()*listVerbeIsa.length);
@@ -54,7 +51,7 @@ function getVerbeNegCaracAleatoire(){
 
 function getVerbeNegIsaAleatoire(){
     var listVerbeIsaNeg = [
-        "n'a"//,"peut-avoir","est-constitué"
+        "n'est"//,"peut-avoir","est-constitué"
     ];
 
     var numRandom = Math.floor(Math.random()*listVerbeIsaNeg.length);
@@ -88,6 +85,7 @@ exports.getTheAnswerToSendBack = function(first,second,result_isRelationTrue,wor
 
     firstArticle = (firstArticle==-1 ? "" : firstArticle);
     secondArticle = (secondArticle==-1 ? "" : secondArticle);
+    console.log("relation = "+result_isRelationTrue.relation);
     switch (result_isRelationTrue.code) {
         case -1:
 
@@ -103,8 +101,11 @@ exports.getTheAnswerToSendBack = function(first,second,result_isRelationTrue,wor
             if (result_isRelationTrue.relation === "r_carac"){
                 verbe = getVerbeNegCaracAleatoire();
             }
-            else {
+            else if (result_isRelationTrue.relation === "r_isa"){
                 verbe = getVerbeNegIsaAleatoire();
+            }
+            else {
+                return "La réponse pour cette relation n'a pas été implémenté.";
             }
 
             res += firstArticle + " " +first+ " " +
@@ -116,8 +117,11 @@ exports.getTheAnswerToSendBack = function(first,second,result_isRelationTrue,wor
             if (result_isRelationTrue.relation === "r_carac"){
                 verbe = getVerbeCaracAleatoire();
             }
-            else {
+            else if (result_isRelationTrue.relation === "r_isa"){
                 verbe = getVerbeIsaAleatoire();
+            }
+            else {
+                return "La réponse pour cette relation n'a pas été implémenté.";
             }
 
             res += firstArticle + " " +first+ " " +
