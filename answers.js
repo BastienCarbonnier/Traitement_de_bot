@@ -1,22 +1,133 @@
-exports.getTheAnswerToSendBack = function(first,second,result_isRelationTrue,words)
+
+
+
+
+
+function getAdverbeAffAleatoire(){
+    var listAdverbeAffirmatif = [
+        "toujours","assurément","certainement","probablement","vraisembablement", "souvent","presque tout le temps","eventuellement","exclusivement","parfois"
+    ];
+
+    var numRandom = Math.floor(Math.random()*listAdverbeAffirmatif.length);
+
+    return listAdverbeAffirmatif[numRandom];
+}
+function getAdverbeNegAleatoire(){
+    var listAdverbeNegatif = [
+        "aucunement","jamais","nullement","pas","certainement pas","assurément pas","vraisembablement pas", "probablement pas"
+    ];
+
+    var numRandom = Math.floor(Math.random()*listAdverbeNegatif.length);
+
+    return listAdverbeNegatif[numRandom];
+}
+
+function getVerbeCaracAleatoire(){
+    var listVerbeCarac = [
+        "est"//,"peut-être"
+    ];
+
+    var numRandom = Math.floor(Math.random()*listVerbeCarac.length);
+
+    return listVerbeCarac[numRandom];
+}
+
+function getVerbeIsaAleatoire(){
+    var listVerbeIsa = [
+        "a","peut-avoir","est-constitué"
+    ];
+
+    var numRandom = Math.floor(Math.random()*listVerbeIsa.length);
+
+    return listVerbeIsa[numRandom];
+}
+
+function getVerbeNegCaracAleatoire(){
+    var listVerbeCaracNeg = [
+        "n'est"//,"peut-être"
+    ];
+
+    var numRandom = Math.floor(Math.random()*listVerbeCaracNeg.length);
+
+    return listVerbeCaracNeg[numRandom];
+}
+
+function getVerbeNegIsaAleatoire(){
+    var listVerbeIsaNeg = [
+        "n'a"//,"peut-avoir","est-constitué"
+    ];
+
+    var numRandom = Math.floor(Math.random()*listVerbeIsaNeg.length);
+
+    return listVerbeIsaNeg[numRandom];
+}
+
+function getArticleBeforeWord(word,words_tab){
+    for (var w in words_tab)
+	{
+        if (words_tab[w].word === word){
+            if (w>0){
+                if (words_tab[w-1].role === "article"){
+                    return words_tab[w-1].word;
+                }
+            }
+        }
+	}
+    return -1;
+
+}
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+exports.getTheAnswerToSendBack = function(first,second,result_isRelationTrue,words_tab)
 {
     var res = "";
-    console.log("deuxièmemot:"+second.word);
-    console.log("coderelation:"+result_isRelationTrue.code);
+    var verbe = "";
+    var firstArticle = getArticleBeforeWord(first,words_tab);
+    var secondArticle = getArticleBeforeWord(second.word,words_tab);
+
+    firstArticle = (firstArticle==-1 ? "" : firstArticle);
+    secondArticle = (secondArticle==-1 ? "" : secondArticle);
     switch (result_isRelationTrue.code) {
         case -1:
-        res += "Les mots " + first + " et " + second.word + " n'ont aucun lien. ";
+
+
+            res += firstArticle + " " +first+ " et " +
+                   secondArticle+ " " + second.word +
+                   " n'ont aucun lien";
+
         break;
+
         case 0:
-        res += "Relation " + result_isRelationTrue.relation + " négative entre les mots " + first + " et " + second.word;
+
+            if (result_isRelationTrue.relation === "r_carac"){
+                verbe = getVerbeNegCaracAleatoire();
+            }
+            else {
+                verbe = getVerbeNegIsaAleatoire();
+            }
+
+            res += firstArticle + " " +first+ " " +
+                   verbe + " " + getAdverbeNegAleatoire()+ " " +
+                   secondArticle + " " + second.word ;
         break;
         case 1:
-        res += "Les deux mots " + first + " et " + second.word + " ont bien le lien " + result_isRelationTrue.relation + ". ";
-        console.log(result_isRelationTrue.relation);
+
+            if (result_isRelationTrue.relation === "r_carac"){
+                verbe = getVerbeCaracAleatoire();
+            }
+            else {
+                verbe = getVerbeIsaAleatoire();
+            }
+
+            res += firstArticle + " " +first+ " " +
+                   verbe + " " + getAdverbeAffAleatoire()+ " " +
+                   secondArticle + " " + second.word ;
+
         break;
         default:
         res += "Erreur de sortie isRelationTrue";
     }
-
-    return res;
+    //var res = "second word : "+second.word;
+    return capitalizeFirstLetter(res) + ".";//+ "  article : "+ getArticleBeforeWord(second.word,words_tab);
 };

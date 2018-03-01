@@ -48,7 +48,6 @@ function isRelationTrue(words, obj, mot2)
 
 			res.code = (obj[rel]['poid'] > 0)?1:0;
 			res.relation = obj[rel]['relation'];
-			console.log("je renvoie bien");
 			return res;
 		}
 	}
