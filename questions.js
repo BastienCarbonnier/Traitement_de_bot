@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 var answers = require('./answers.js'),
 	tools 	= require('./tools.js');
 /* @return les mots du messages en un tableau */
@@ -57,12 +59,25 @@ function isRelationTrue(words, obj, mot2)
 }
 
 /* @return le second mot à analyser dans la phrase */
-function secondWord(words)
+function secondWord(first,words)
 {
 	var w;
 	for (w in words)
 	{
-		if ((words[w].role == "Nom") & (words[w].word != "ordinateur")) // à modifier plus tard
+		if ((words[w].role === "Nom") && (words[w].word !== first.word)) // à modifier plus tard
+		{
+			return words[w];
+		}
+	}
+	return -1;
+}
+/* @return le premier mot à analyser dans la phrase */
+function firstWord(words)
+{
+	var w;
+	for (w in words)
+	{
+		if (words[w].role == "Nom") // à modifier plus tard
 		{
 			return words[w];
 		}
@@ -170,11 +185,11 @@ function printSentenceAnalyzed(words)
 /* @return un String contenant le message à afficher selon le cas (question, affirmation) */
 function getAnswer(words,obj)
 {
-    var first = "ordinateur";
-    var second = secondWord(words);
+    var first = firstWord(words);
+    var second = secondWord(first,words);
     var result_isRelationTrue = isRelationTrue(words,obj,second);
 
-    return answers.getTheAnswerToSendBack(first,second,result_isRelationTrue,words);
+    return answers.sendBackAnswer(first,second,result_isRelationTrue,words);
 }
 
 
@@ -194,7 +209,7 @@ exports.process = function(message)
 
     console.log(words);
     words = modifIfQuestion(words);
-
+console.log(words);
     var finalMessage = "";
 
     finalMessage += getAnswer(words,obj);

@@ -1,3 +1,9 @@
+/*jshint esversion: 6 */
+var http = require('http'),
+    tools = require('./tools.js'),
+    bot = require('../server.js'),
+    windows1252 = require('windows-1252');
+
 function getAdverbeAffAleatoire(){
     var listAdverbeAffirmatif = [
         "toujours","assurément","certainement","probablement","vraisembablement",
@@ -76,11 +82,30 @@ function getArticleBeforeWord(word,words_tab){
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
-exports.getTheAnswerToSendBack = function(first,second,result_isRelationTrue,words_tab)
+exports.sendBackAnswer = function(first,second,result_isRelationTrue,words_tab)
 {
     var res = "";
     var verbe = "";
-    var firstArticle = getArticleBeforeWord(first,words_tab);
+    var listPhraseErreur = [
+        "C'est pas faux !",
+        "Faut arrêter ces conneries de nord et de sud ! Une fois pour toutes, le nord, suivant comment on est tourné, ça change tout !",
+        "Ah ! oui... j' l'ai fait trop fulgurant, là. Ça va ?",
+        "J'voudrais pas faire ma raclette, mais la soirée s'annonce pas super.",
+        "Mais cherchez pas à faire des phrases pourries... On en a gros, c'est tout !",
+        "Il s'agirait de grandir hein, il s'agirait de grandir...",
+        "Habile !",
+        "Oui, je connais cette théorie",
+        "J'aime le bruit blanc de l'eau."
+    ];
+    console.log("first word : "+first.word+" second word : "+second.word);
+    if (first.word !== "ordinateur" || second.word === -1 || first.word === -1){
+
+        var numRandom = Math.floor(Math.random()*listPhraseErreur.length);
+
+        bot.sendMessage(listPhraseErreur[numRandom]);
+        return;
+    }
+    var firstArticle = getArticleBeforeWord(first.word,words_tab);
     var secondArticle = getArticleBeforeWord(second.word,words_tab);
 
     firstArticle = (firstArticle==-1 ? "" : firstArticle);
@@ -90,7 +115,7 @@ exports.getTheAnswerToSendBack = function(first,second,result_isRelationTrue,wor
         case -1:
 
 
-            res += firstArticle + " " +first+ " et " +
+            res += firstArticle + " " +first.word+ " et " +
                    secondArticle+ " " + second.word +
                    " n'ont aucun lien";
 
@@ -108,7 +133,7 @@ exports.getTheAnswerToSendBack = function(first,second,result_isRelationTrue,wor
                 return "La réponse pour cette relation n'a pas été implémenté.";
             }
 
-            res += firstArticle + " " +first+ " " +
+            res += firstArticle + " " +first.word+ " " +
                    verbe + " " + getAdverbeNegAleatoire()+ " " +
                    secondArticle + " " + second.word ;
         break;
@@ -124,14 +149,33 @@ exports.getTheAnswerToSendBack = function(first,second,result_isRelationTrue,wor
                 return "La réponse pour cette relation n'a pas été implémenté.";
             }
 
-            res += firstArticle + " " +first+ " " +
+            res += firstArticle + " " +first.word+ " " +
                    verbe + " " + getAdverbeAffAleatoire()+ " " +
                    secondArticle + " " + second.word ;
 
         break;
         default:
         res += "Erreur de sortie isRelationTrue";
+
+
     }
-    //var res = "second word : "+second.word;
-    return capitalizeFirstLetter(res) + ".";//+ "  article : "+ getArticleBeforeWord(second.word,words_tab);
+
+    bot.sendMessage(capitalizeFirstLetter(res) + ".");
+
+    /*
+        tools.getDataFromWebsite(function(err,data){
+                if (err) {
+                    // error handling code goes here
+                    console.log("ERROR : ",err);
+                    bot.sendMessage(err);
+                } else {
+                    // code to execute on data retrieval
+                    console.log("result from requete is : ",data);
+                    bot.sendMessage(data);
+                }
+        });
+    */
+
+
+    //+ "  article : "+ getArticleBeforeWord(second.word,words_tab);
 };

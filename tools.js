@@ -1,3 +1,8 @@
+/*jshint esversion: 6 */
+
+var rp = require('request-promise');
+var cheerio = require('cheerio');
+var windows1252 = require('windows-1252');
 exports.isQuestion = function(message)
 {
     return message.indexOf("?") != -1;
@@ -31,4 +36,26 @@ exports.isAdjectif = function(word){
         "nul", "nulle" , "nuls", "nulles"
     ];
     return (tabAdjectifs.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
+};
+
+exports.getDataFromWebsite = function(callback){
+
+    var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel=scène&rel=4");
+    const options = {
+        uri: url,
+        transform: function (body) {
+            return cheerio.load(body);
+        }
+    };
+
+    rp(options)
+    .then(($) => {
+        console.log($('code').text());
+        callback(null,decodeURI(encodeURI(windows1252.decode($('code').text()))));
+
+    })
+    .catch((err) => {
+        console.log(err);
+        callback(err);
+    });
 };

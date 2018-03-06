@@ -1,4 +1,4 @@
-
+/*jshint esversion: 6 */
 //var bdd = require('./fonctions_bdd.js');
 
 var affirmation = require('./affirmations.js'),
@@ -22,13 +22,12 @@ var affirmation = require('./affirmations.js'),
 		var finalMessage = "";
 
 		if (tools.isQuestion(message)){
-			finalMessage = question.process(message);
+			question.process(message);
 		}
 		else{
-			finalMessage = affirmation.process(message);
+			affirmation.process(message);
 		}
 
-		return finalMessage;
 	};
 
 
