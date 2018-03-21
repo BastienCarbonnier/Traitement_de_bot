@@ -35,7 +35,7 @@ var affirmation = require('./affirmations.js'),
 		var date_string = date.getDate() + ":"+ month+":"+ date.getFullYear()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+" ";
 		var log = "\n" + date_string + "; " + username + " ;" + message;
 
-	    var logger = fs.createWriteStream("./log/logs.txt", {
+	    var logger = fs.createWriteStream("./logs.txt", {
 	        flags: 'a' // 'a' means appending (old data will be preserved)
 	    });
 

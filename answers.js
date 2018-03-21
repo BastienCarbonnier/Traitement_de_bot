@@ -103,7 +103,7 @@ exports.sendBackAnswer = function(first,second,result_isRelationTrue,words_tab)
 
         var numRandom = Math.floor(Math.random()*listPhraseErreur.length);
         var reponse = listPhraseErreur[numRandom];
-        logMessageSended (true, message);
+        logMessageSended (true, reponse);
         bot.sendMessage(reponse);
         return;
     }
@@ -175,7 +175,7 @@ function logMessageSended (err, message){
     var date_string = date.getDate() + ":"+ month+":"+ date.getFullYear()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+" ";
     var log = "\n" + date_string + "; BOT ;" + message;
 
-    var logger = fs.createWriteStream("./log/logs.txt", {
+    var logger = fs.createWriteStream("./logs.txt", {
         flags: 'a' // 'a' means appending (old data will be preserved)
     });
     if (err){
