@@ -5,22 +5,21 @@ var affirmation = require('./affirmations.js'),
 	question	= require('./questions.js'),
 	answers		= require('./answers.js'),
 	tools 		= require('./tools.js') ;
+	fs 			= require('fs');
 	//bdd = require('./functions_bdd.js');
 
 
 	/* Fonction principal à appeler dans le bot
 	@param un String contenant le message de l'utilisateur
 	@return un String contenant le message à renvoyer à l'utilisateur */
-	exports.parse = function(message)
+	exports.parse = function(message,username)
 	{
 
-		var fs = require("fs");
 		var content = fs.readFileSync("./Traitement_de_bot/heber_19409044_skypebot_ordi.json","utf8");
 		var contentTraite = content.replace(/'/g,'"');
 		const obj = JSON.parse(contentTraite);
 
-		var finalMessage = "";
-
+		logMessageReceived (message,username);
 		if (tools.isQuestion(message)){
 			question.process(message);
 		}
@@ -29,6 +28,20 @@ var affirmation = require('./affirmations.js'),
 		}
 
 	};
+
+	function logMessageReceived (message,username){
+		var date = new Date();
+		var month = date.getMonth()+1;
+		var date_string = date.getDate() + ":"+ month+":"+ date.getFullYear()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+" ";
+		var log = "\n" + date_string + "; " + username + " ;" + message;
+
+	    var logger = fs.createWriteStream("./log/logs.txt", {
+	        flags: 'a' // 'a' means appending (old data will be preserved)
+	    });
+
+	    logger.write(log);
+		logger.end();
+	}
 
 
 //Method to use

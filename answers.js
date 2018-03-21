@@ -95,14 +95,16 @@ exports.sendBackAnswer = function(first,second,result_isRelationTrue,words_tab)
         "Il s'agirait de grandir hein, il s'agirait de grandir...",
         "Habile !",
         "Oui, je connais cette théorie",
-        "J'aime le bruit blanc de l'eau."
+        "J'aime le bruit blanc de l'eau.",
+        "Je vois pas le rapport avec la Bretagne..."
     ];
     console.log("first word : "+first.word+" second word : "+second.word);
     if (first.word !== "ordinateur" || second.word === -1 || first.word === -1){
 
         var numRandom = Math.floor(Math.random()*listPhraseErreur.length);
-
-        bot.sendMessage(listPhraseErreur[numRandom]);
+        var reponse = listPhraseErreur[numRandom];
+        logMessageSended (true, message);
+        bot.sendMessage(reponse);
         return;
     }
     var firstArticle = getArticleBeforeWord(first.word,words_tab);
@@ -159,23 +161,27 @@ exports.sendBackAnswer = function(first,second,result_isRelationTrue,words_tab)
 
 
     }
-
-    bot.sendMessage(capitalizeFirstLetter(res) + ".");
-
-    /*
-        tools.getDataFromWebsite(function(err,data){
-                if (err) {
-                    // error handling code goes here
-                    console.log("ERROR : ",err);
-                    bot.sendMessage(err);
-                } else {
-                    // code to execute on data retrieval
-                    console.log("result from requete is : ",data);
-                    bot.sendMessage(data);
-                }
-        });
-    */
+    var message = capitalizeFirstLetter(res) + ".";
+    logMessageSended (false, message);
+    bot.sendMessage(message);
 
 
     //+ "  article : "+ getArticleBeforeWord(second.word,words_tab);
 };
+
+function logMessageSended (err, message){
+    var date = new Date();
+    var month = date.getMonth()+1;
+    var date_string = date.getDate() + ":"+ month+":"+ date.getFullYear()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+" ";
+    var log = "\n" + date_string + "; BOT ;" + message;
+
+    var logger = fs.createWriteStream("./log/logs.txt", {
+        flags: 'a' // 'a' means appending (old data will be preserved)
+    });
+    if (err){
+        log += "   -----FAIL-----";
+    }
+
+    logger.write(log);
+    logger.end();
+}

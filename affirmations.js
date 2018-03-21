@@ -1,4 +1,6 @@
-var tools = require('./tools.js');
+var tools = require('./tools.js'),
+    bot = require('../server.js');
+
 
 exports.process = function(message)
 {
@@ -13,6 +15,20 @@ exports.process = function(message)
     console.log(words_tab);
     var analyzed = analyseWords(words_tab);
     console.log(analyzed);
+
+    tools.getDataFromWebsite(message,function(err,message){
+            if (err) {
+                // error handling code goes here
+                console.log("ERROR : ",err);
+                bot.sendMessage(err);
+                logMessageSended (message);
+            } else {
+                // code to execute on data retrieval
+                console.log("result from requete to word : "+message+"\n",message);
+                bot.sendMessage(message);
+                logMessageSended (message);
+            }
+    });
     /*
     var words = giveWord(analyzed);
     words = allRoleWord(words,obj);
@@ -26,9 +42,22 @@ exports.process = function(message)
 
     return finalMessage;
     */
-   return printSentenceAnalyzed(analyzed);
 };
 
+function logMessageSended (message){
+    var date = new Date();
+    var month = date.getMonth()+1;
+    var date_string = date.getDate() + ":"+ month+":"+ date.getFullYear()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+" ";
+    var log = "\n" + date_string + "; BOT ;" + message;
+
+    var logger = fs.createWriteStream("./log/logs.txt", {
+        flags: 'a' // 'a' means appending (old data will be preserved)
+    });
+    
+
+    logger.write(log);
+    logger.end();
+}
 /* @return un String contenant le message à afficher dans le cas d'une analyse */
 function printSentenceAnalyzed(words)
 {

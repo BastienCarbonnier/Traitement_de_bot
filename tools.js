@@ -3,6 +3,15 @@
 var rp = require('request-promise');
 var cheerio = require('cheerio');
 var windows1252 = require('windows-1252');
+var iconv = require('iconv-lite');
+
+function Node (id,word,r_id,poids) {
+  this.id = id;
+  this.word = word;
+  this.r_id = r_id;
+  this.poids = poids;
+}
+
 exports.isQuestion = function(message)
 {
     return message.indexOf("?") != -1;
@@ -38,20 +47,38 @@ exports.isAdjectif = function(word){
     return (tabAdjectifs.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 };
 
-exports.getDataFromWebsite = function(callback){
+exports.getDataFromWebsite = function(word,callback){
 
-    var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel=scène&rel=4");
+    var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+word+"&rel=4");
     const options = {
         uri: url,
+        encoding: 'binary',
         transform: function (body) {
-            return cheerio.load(body);
+            return cheerio.load(body, {decodeEntities: false});
         }
     };
 
     rp(options)
     .then(($) => {
-        console.log($('code').text());
-        callback(null,decodeURI(encodeURI(windows1252.decode($('code').text()))));
+
+        var result = $('code').text();
+
+        formatResultRequest(result, function (data){
+            var max_poids = 0;
+            var max_word = "";
+            for (var i in data){
+                if (data[i].r_id == 4 && data[i].poids >= max_poids){
+                    max_poids = data[i].poids;
+                    max_word = data[i].word;
+                }
+            }
+            console.log(data);
+            console.log(formatWordFromRequest(max_word));
+            callback(null,formatWordFromRequest(max_word));
+        });
+
+
+
 
     })
     .catch((err) => {
@@ -59,3 +86,20 @@ exports.getDataFromWebsite = function(callback){
         callback(err);
     });
 };
+
+function formatWordFromRequest(word){
+    return word.substring(1,word.length - 2);
+}
+
+function formatResultRequest(data,callback){
+    // regex (e;\d.*)
+    var res =data.match(/(e;\d.*)/g);
+
+    var tab_Node = [];
+
+    for (var i in res){
+        var split_node = res[i].split(";");
+        tab_Node[i] = new Node(split_node[1],split_node[2],split_node[3],split_node[4]);
+    }
+    callback(tab_Node);
+}
