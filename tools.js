@@ -47,9 +47,54 @@ exports.isAdjectif = function(word){
     return (tabAdjectifs.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 };
 
-exports.getDataFromWebsite = function(word,callback){
+exports.isVerbeIsa = function (word){
+    var tabVerbeIsa = [
+        "est","est-il","est-elle","sont-elles","sont-ils"
+    ];
+    return (tabVerbeIsa.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
+};
 
-    var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+word+"&rel=4");
+exports.isVerbeCarac = function (word){
+    var tabVerbeCarac = [
+        "est","est-il","est-elle","sont-elles","sont-ils"
+    ];
+    return (tabVerbeCarac.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
+};
+
+exports.isRelationTrueBis= function(mot1, mot2, callback)
+{
+	var fs = require("fs");
+    var content = fs.readFileSync("./Traitement_de_bot/heber_19409044_skypebot_ordi.json","utf8");
+    var contentTraite = content.replace(/'/g,'"');
+    var obj2 = JSON.parse(contentTraite);
+
+
+	const tempid = '4'; // l'idMot=4 correspond au mot "ordinateur"
+	var rel; var res = {};
+	for (rel in obj2)
+	{
+		if (obj2[rel].idMot == tempid && obj2[rel].mot == mot2)
+		{
+			res.code = (obj2[rel].poid > 0)?1:0;
+			res.relation = obj2[rel].relation;
+			callback(null,res);
+		}
+	}
+	console.log(res);
+	callback(-1);
+
+};
+
+exports.isVerbeHasPart = function (word){
+    var tabVerbeHasPart = [
+        "a","a-t-il","a-t-elle","possède"
+    ];
+    return (tabVerbeHasPart.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
+};
+
+exports.getDataFromRezoDump = function(word,rel_id,callback){
+
+    var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+word+"&rel="+rel_id);
     const options = {
         uri: url,
         encoding: 'binary',
@@ -72,7 +117,7 @@ exports.getDataFromWebsite = function(word,callback){
                     max_word = data[i].word;
                 }
             }
-            console.log(data);
+            //console.log(data);
             console.log(formatWordFromRequest(max_word));
             callback(null,formatWordFromRequest(max_word));
         });
