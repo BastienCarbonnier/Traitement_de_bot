@@ -1,9 +1,9 @@
 /*jshint esversion: 6 */
 
-var rp = require('request-promise');
-var cheerio = require('cheerio');
-var windows1252 = require('windows-1252');
-var iconv = require('iconv-lite');
+var rp          = require('request-promise'),
+    cheerio     = require('cheerio'),
+    windows1252 = require('windows-1252'),
+    fs 			    = require("fs");
 
 function Node (id,word,r_id,poids) {
   this.id = id;
@@ -18,9 +18,9 @@ exports.isQuestion = function(message)
 };
 exports.isArticle = function(word)
 {
-	var tabArticles = [
-		"le","la","l","les", //article definis
-		"une","un","uns","unes","des","d", // article indefini
+    var tabArticles = [
+		    "le","la","l","les", //article definis
+		    "une","un","uns","unes","des","d", // article indefini
         "du","de la","de l",// article partatifs
         "au","aux" // article def contracté
 	];
@@ -30,7 +30,7 @@ exports.isArticle = function(word)
 exports.isAdjectif = function(word){
     var tabAdjectifs = [
         "ce","cet","cette","ces", //adjectifs demonst
-		"mon","ton","son","notre","votre","leur","ma","ta","sa","mes","tes","ses","nos","vos","leurs", // adj possessifs
+		    "mon","ton","son","notre","votre","leur","ma","ta","sa","mes","tes","ses","nos","vos","leurs", // adj possessifs
         "aucun", "aucune" , "aucuns", "aucunes",// Adj indéfinis
         "maint", "mainte" , "maints", "maintes",
         "quel que", "quelle que" , "quels que", "quelles que",
@@ -61,27 +61,39 @@ exports.isVerbeCarac = function (word){
     return (tabVerbeCarac.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 };
 
-exports.isRelationTrueBis= function(mot1, mot2, callback)
-{
-	var fs = require("fs");
+exports.initialization = function(callback){
+    var mc = fs.readFileSync("./Traitement_de_bot/mots_composes.txt","binary");
+    var mc_tab = mc.split("\n");
+    var hashmap_mc = new Map();
+
+    for (var i in mc_tab){
+        var t = mc_tab[i].split(";");
+        hashmap_mc.set(t[1],t[0]);
+    }
+
     var content = fs.readFileSync("./Traitement_de_bot/heber_19409044_skypebot_ordi.json","utf8");
     var contentTraite = content.replace(/'/g,'"');
     var obj2 = JSON.parse(contentTraite);
 
+    callback(hashmap_mc,obj2);
 
+};
+exports.isRelationTrueBis= function(fw, sw,rel,heber_ordi, callback){
 	const tempid = '4'; // l'idMot=4 correspond au mot "ordinateur"
-	var rel; var res = {};
-	for (rel in obj2)
+	var i; var res = -1;
+	for (i in heber_ordi)
 	{
-		if (obj2[rel].idMot == tempid && obj2[rel].mot == mot2)
+		if (heber_ordi[i].idMot == tempid && heber_ordi[i].mot == sw)
 		{
-			res.code = (obj2[rel].poid > 0)?1:0;
-			res.relation = obj2[rel].relation;
-			callback(null,res);
+            var relation = heber_ordi[i].relation;
+            if (relation == rel){
+                res= (heber_ordi[i].poid > 0)?1:0;
+    			      callback(res);
+                return;
+            }
 		}
 	}
-	console.log(res);
-	callback(-1);
+	callback(res);
 
 };
 
@@ -92,6 +104,51 @@ exports.isVerbeHasPart = function (word){
     return (tabVerbeHasPart.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 };
 
+exports.checkRelationFromRezoAsk = function(fw,sw,rel,callback){
+  //var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+fw+"&rel="+rel_id);
+  var url = windows1252.encode("http://www.jeuxdemots.org/rezo-ask.php?doinfer=NO&gotermsubmit=Demander&term1="+fw+"&rel="+rel+"&term2="+sw);
+
+  const options = {
+      uri: url,
+      encoding: 'binary',
+      transform: function (body) {
+          return cheerio.load(body, {decodeEntities: false});
+      }
+  };
+
+  rp(options)
+  .then(($) => {
+
+      var result = {
+          res : $('r').text(),
+          poid : $('w').text(),
+          annot : $('anot').text().replace(/\s|;/g,''),
+      };
+      callback(result);
+      /*
+      formatResultRequest(result, function (data){
+          var max_poids = 0;
+          var max_word = "";
+          for (var i in data){
+              if (data[i].r_id == 4 && data[i].poids >= max_poids){
+                  max_poids = data[i].poids;
+                  max_word = data[i].word;
+              }
+          }
+          //console.log(data);
+          console.log(formatWordFromRequest(max_word));
+          callback(null,formatWordFromRequest(max_word));
+      });
+      */
+
+
+
+  })
+  .catch((err) => {
+      console.log(err);
+      callback(err);
+  });
+};
 exports.getDataFromRezoDump = function(word,rel_id,callback){
 
     var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+word+"&rel="+rel_id);

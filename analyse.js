@@ -1,30 +1,23 @@
 /*jshint esversion: 6 */
-//var bdd = require('./fonctions_bdd.js');
-
 var affirmation = require('./affirmations.js'),
-	question	= require('./questions.js'),
-	answers		= require('./answers.js'),
-	tools 		= require('./tools.js') ;
-	fs 			= require('fs');
+		question		= require('./questions.js'),
+		tools 			= require('./tools.js'),
+		fs 					= require('fs');
 	//bdd = require('./functions_bdd.js');
 
 
 	/* Fonction principal à appeler dans le bot
 	@param un String contenant le message de l'utilisateur
 	@return un String contenant le message à renvoyer à l'utilisateur */
-	exports.parse = function(message,username)
+	exports.parse = function(message,username,hashmap,heber_ordi)
 	{
-
-		var content = fs.readFileSync("./Traitement_de_bot/heber_19409044_skypebot_ordi.json","utf8");
-		var contentTraite = content.replace(/'/g,'"');
-		const obj = JSON.parse(contentTraite);
 
 		logMessageReceived (message,username);
 		if (tools.isQuestion(message)){
-			question.process(message);
+			question.process(message,hashmap,heber_ordi);
 		}
 		else{
-			affirmation.process(message);
+			affirmation.process(message,hashmap,heber_ordi);
 		}
 
 	};
@@ -42,6 +35,7 @@ var affirmation = require('./affirmations.js'),
 	    logger.write(log);
 		logger.end();
 	}
+
 
 
 //Method to use

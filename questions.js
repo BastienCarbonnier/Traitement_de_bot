@@ -1,7 +1,8 @@
 /*jshint esversion: 6 */
 
 var answers = require('./answers.js'),
-	tools 	= require('./tools.js');
+		tools 	= require('./tools.js'),
+		fs 			= require("fs");
 /* @return les mots du messages en un tableau */
 
 function getWordsFromMessage(message) {
@@ -163,28 +164,26 @@ function getAnswer(words,obj)
     answers.sendBackAnswer(first,second,result_isRelationTrue,words);
 }
 
-
-exports.process = function(message)
+var hashmap_mc = new Map();
+var heber_ordi = {};
+exports.process = function(message,hashmap,heber_ordi_init)
 {
 
+	hashmap_mc = hashmap;
+	heber_ordi = heber_ordi_init;
+	/*
+	var analyzed = getWordsFromMessage(message);
+	console.log(analyzed);
+	var words = giveWord(analyzed);
+	words = allRoleWord(words,heber_ordi);
 
-    var fs = require("fs");
-    var content = fs.readFileSync("./Traitement_de_bot/heber_19409044_skypebot_ordi.json","utf8");
-    var contentTraite = content.replace(/'/g,'"');
-    const obj = JSON.parse(contentTraite);
-
-
-    var analyzed = getWordsFromMessage(message);
-    console.log(analyzed);
-    var words = giveWord(analyzed);
-    words = allRoleWord(words,obj);
-
-    console.log(words);
-    words = modifIfQuestion(words);
+	console.log(words);
+	words = modifIfQuestion(words);
 	console.log(words);
 
 
-    getAnswer(words,obj);
+	getAnswer(words,heber_ordi);
+	*/
 	parseMessage(message);
 };
 
@@ -193,7 +192,6 @@ function parseMessage(message){
 
 	var words = getWordsFromMessage(message);
 	var rel = "";
-	var index_verbe = -1;
 
 	if (words[0] === "Est-ce" && words[1]=== "que")
 		words.splice(0,2);
@@ -202,46 +200,46 @@ function parseMessage(message){
 
 	findRelation(words);
 
+
 }
 
 function findRelation(words){
 
 	var rel = "";
 	var index_verbe = -1;
-	var firstWord = "";
-	var secondWord = "";
+	var offset_fw = -1;
+	var offset_sw = 1;
 
 	for (var i in words){
-		var w = words[i];
 		i = Number(i);
+		var w = words[i];
+
 
 		if (i+1 < words.length && tools.isVerbeIsa(w) && tools.isArticle(words[i+1])){
-			index_verbe = i+1;
-			firstWord = words[index_verbe-2];
-			secondWord = words[Number(index_verbe)+1];
+			index_verbe = i;
+			offset_fw += 0;
+			offset_sw += 1;
 			rel = "r_isa";
 			break;
 		}
 		else if (tools.isVerbeCarac(w)){
 
 			index_verbe = i;
-			firstWord = words[index_verbe-1];
-			secondWord = words[Number(index_verbe)+1];
+			offset_fw += 0;
+			offset_sw += 0;
 			rel = "r_carac";
 			break;
 		}
 		else if (tools.isVerbeHasPart(w)){
 			if (i+1 < words.length && tools.isArticle(words[i+1])){
-				index_verbe = i+1;
-
-				firstWord = words[index_verbe-2];
-				secondWord = words[Number(index_verbe)+1];
+				index_verbe = i;
+				offset_fw += 0;
+				offset_sw += 1;
 			}
 			else{
 				index_verbe = i;
-
-				firstWord = words[index_verbe-1];
-				secondWord = words[Number(index_verbe)+1];
+				offset_fw += 0;
+				offset_sw += 0;
 			}
 			rel = "r_has_part";
 			break;
@@ -251,7 +249,7 @@ function findRelation(words){
 
 				if(i+2 < words.length && tools.isArticle(words[i+2])){
 					rel = "r_isa";
-					index_verbe = i+1;
+					index_verbe = i;
 				}
 				else{
 					rel = "r_carac";
@@ -263,18 +261,18 @@ function findRelation(words){
 				words.splice(i+1,1);
 				words[i] = words[i]+" "+temp;
 
-				firstWord = words[index_verbe-2];
-				secondWord = words[Number(index_verbe)+1];
+				offset_fw += 0;
+				offset_sw += 0;
 				break;
 			}
 			else if(i+1 < words.length && (words[i+1]=== "avoir")){
 				let temp = words[i+1];
 				words.splice(i+1,1);
 				words[i] = words[i]+" "+temp;
-				index_verbe = i+1;
+				index_verbe = i;
 
-				firstWord = words[index_verbe-2];
-				secondWord = words[Number(index_verbe)+1];
+				offset_fw += 0;
+				offset_sw += 1;
 				rel = "r_has_part";
 				break;
 			}
@@ -287,23 +285,60 @@ function findRelation(words){
 
 		console.log("relation verbe : "+rel+" \n");
 		console.log("index verbe : "+index_verbe+" \n");
-		console.log("first word : "+firstWord+"   second word : "+secondWord+" \n");
-		console.log("index verbe : "+index_verbe+" \n");
 		console.log(words);
-		tools.isRelationTrueBis(firstWord, secondWord,function(err,data){
-			if (err){
-				console.log(err);
-			}
-			else{
-				console.log(data);
 
-			}
+		checkComposedWord (words,index_verbe,function(words_tab,new_index_verbe){
+			console.log("\n Dans le callback de checkComposedWord\n");
+			console.log(words_tab);
+			console.log("new index verbe : "+new_index_verbe+" \n");
+
+			var fw_id = new_index_verbe+offset_fw;
+			var sw_id = new_index_verbe+offset_sw;
+			var fw = words_tab[fw_id];
+			var sw = words_tab[sw_id];
+
+			//console.log("first word : "+fw+"   second word : "+sw+" index_sw = "+Number(sw_id)+" \n");
+			tools.checkRelationFromRezoAsk(fw,sw,rel,function(result){
+				console.log("Result from checkRelationFrowRezoDump() : \n");
+				console.log(result);
+				answers.sendBackAnswerBis(fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab);
+			});
 		});
+
 	}
 	else{
 		console.log("Erreur verbe non trouvé !!!");
+
 		console.log("relation verbe : "+rel+" \n");
 		console.log(words);
+		answers.sendBackAnswerError("Je n'ai pas réussi à détecter le verbe présent dans la phrase...");
 	}
 
+}
+
+function checkComposedWord (words_tab,index_verbe,callback){
+
+	for (var i=0;i<index_verbe-1;i++){
+		var mot = "";
+		i = Number(i);
+		mot = words_tab[i]+" "+words_tab[i+1];
+
+		if(hashmap_mc.get(mot)!== undefined){
+			words_tab.splice(i,1);
+			words_tab[i]=mot;
+			index_verbe = index_verbe - 1;
+		}
+	}
+
+	for (var j=index_verbe+1;j<words_tab.length-1;j++){
+		var mot2 = "";
+		j = Number(j);
+		mot2 = words_tab[j]+" "+words_tab[j+1];
+		if(hashmap_mc.get(mot2)!== undefined){
+			words_tab.splice(j,1);
+			words_tab[j]=mot2;
+		}
+
+	}
+	callback(words_tab,index_verbe);
 }

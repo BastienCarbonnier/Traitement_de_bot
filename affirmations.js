@@ -1,13 +1,12 @@
 /*jshint esversion: 6 */
 var tools = require('./tools.js'),
-    bot = require('../server.js');
+    bot   = require('../server.js'),
+    fs    = require("fs");
 
 
 
 exports.process = function(message)
 {
-
-    var fs = require("fs");
     var content = fs.readFileSync("./Traitement_de_bot/heber_19409044_skypebot_ordi.json","utf8");
     var contentTraite = content.replace(/'/g,'"');
     var obj = JSON.parse(contentTraite);
