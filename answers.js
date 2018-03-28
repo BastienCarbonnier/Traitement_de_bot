@@ -249,7 +249,7 @@ exports.sendBackAnswerBis = function(fw,sw,fw_id,sw_id,index_verbe,rel,result,wo
 
     fa = (fa==-1 ? "" : fa);
     sa = (sa==-1 ? "" : sa);
-    console.log("result = ");
+    console.log("\nresult = ");
     console.log(result);
     var code = -1;
     if (result.res === "oui"){
