@@ -209,7 +209,7 @@ function findRelation(words){
 	var index_verbe = -1;
 	var offset_fw = -1;
 	var offset_sw = 1;
-
+	console.log("*** Dans findRelation() : \n");
 	for (var i in words){
 		i = Number(i);
 		var w = words[i];
@@ -282,16 +282,17 @@ function findRelation(words){
 
 
 	if (index_verbe != -1){
-
-		console.log("relation verbe : "+rel+" \n");
-		console.log("index verbe : "+index_verbe+" \n");
+		/*
+		console.log("relation verbe : "+rel);
+		console.log("index verbe : "+index_verbe);
 		console.log(words);
-
+		*/
 		checkComposedWord (words,index_verbe,function(words_tab,new_index_verbe){
+			/*
 			console.log("\n Dans le callback de checkComposedWord\n");
 			console.log(words_tab);
 			console.log("new index verbe : "+new_index_verbe+" \n");
-
+			*/
 			var fw_id = new_index_verbe+offset_fw;
 			var sw_id = new_index_verbe+offset_sw;
 			var fw = words_tab[fw_id];
@@ -299,8 +300,10 @@ function findRelation(words){
 
 			//console.log("first word : "+fw+"   second word : "+sw+" index_sw = "+Number(sw_id)+" \n");
 			tools.checkRelationFromRezoAsk(fw,sw,rel,function(result){
-				console.log("Result from checkRelationFrowRezoDump() : \n");
+				/*
+				console.log("*** Result from checkRelationFrowRezoDump() : \n");
 				console.log(result);
+				*/
 				answers.sendBackAnswerBis(fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab);
 			});
 		});
@@ -318,25 +321,41 @@ function findRelation(words){
 
 function checkComposedWord (words_tab,index_verbe,callback){
 
-	for (var i=0;i<index_verbe-1;i++){
-		var mot = "";
+	//console.log("*** Dans checkComposedWord : \n");
+	for (var i=0;i<index_verbe;i++){
+		let mot = "";
 		i = Number(i);
-		mot = words_tab[i]+" "+words_tab[i+1];
+
+		let k = 0;
+		for (k=i;k<index_verbe;k++){
+			mot += words_tab[k]+" ";
+		}
+		mot = mot.substring(0,mot.length-1);
+		//console.log("mot = "+mot+"\n");
 
 		if(hashmap_mc.get(mot)!== undefined){
-			words_tab.splice(i,1);
+			words_tab.splice(i,k-1);
 			words_tab[i]=mot;
-			index_verbe = index_verbe - 1;
+			index_verbe = index_verbe - k+1;
+			break;
 		}
 	}
 
-	for (var j=index_verbe+1;j<words_tab.length-1;j++){
-		var mot2 = "";
+	for (var j=index_verbe+1;j<words_tab.length;j++){
+		let mot = "";
 		j = Number(j);
-		mot2 = words_tab[j]+" "+words_tab[j+1];
-		if(hashmap_mc.get(mot2)!== undefined){
-			words_tab.splice(j,1);
-			words_tab[j]=mot2;
+
+		let k = 0;
+		for (k=j;k<words_tab.length;k++){
+			mot += words_tab[k]+" ";
+		}
+		mot = mot.substring(0,mot.length-1);
+
+		//console.log("mot = "+mot+"\n");
+
+		if(hashmap_mc.get(mot)!== undefined){
+			words_tab.splice(j,k-1);
+			words_tab[j]=mot;
 		}
 
 	}

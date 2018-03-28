@@ -196,11 +196,12 @@ function getArticleBeforeFirstWord(id_word,words_tab){
 }
 
 function getArticleBeforeSecondWord(id_word,index_verbe,words_tab){
-
+    /*
     console.log("\n Dans getArticleBeforeSecondWord() : \n");
     console.log("\n Id sw = "+id_word);
     console.log("\n index_verbe : "+index_verbe);
     console.log("\n");
+    */
     if (id_word>0 && id_word>index_verbe+1){
         return words_tab[id_word-1];
     }
