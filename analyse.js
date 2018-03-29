@@ -9,15 +9,15 @@ var affirmation = require('./affirmations.js'),
 	/* Fonction principal à appeler dans le bot
 	@param un String contenant le message de l'utilisateur
 	@return un String contenant le message à renvoyer à l'utilisateur */
-	exports.parse = function(message,username,hashmap,heber_ordi)
+	exports.parse = function(message,username,hashmap)
 	{
 
 		logMessageReceived (message,username);
 		if (tools.isQuestion(message)){
-			question.process(message,hashmap,heber_ordi);
+			question.process(message,hashmap);
 		}
 		else{
-			affirmation.process(message,hashmap,heber_ordi);
+			affirmation.process(message,hashmap);
 		}
 
 	};

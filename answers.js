@@ -5,6 +5,7 @@ var http        = require('http'),
     windows1252 = require('windows-1252'),
     fs          = require('fs');
 
+
 function getAdverbeAffAleatoire(){
     var listAdverbeAffirmatif = [
         "toujours","assurément","certainement","probablement","vraisembablement",
@@ -319,8 +320,18 @@ exports.sendBackAnswerBis = function(fw,sw,fw_id,sw_id,index_verbe,rel,result,wo
     logMessageSended (false, message);
     bot.sendMessage(message);
 
+};
 
-    //+ "  article : "+ getArticleBeforeWord(second.word,words_tab);
+exports.sendBackAnswerAffirmation = function (fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab){
+    var mes = "Très bien j'enregistre les informations suivantes :";
+    bot.sendMessage(mes);
+    mes = "Premier mot : "+ fw + "  Deuxième mot : "+sw+"\n";
+    bot.sendMessage(mes);
+    mes = "Relation : "+rel+"\n";
+    bot.sendMessage(mes);
+
+    var log = fw+"  "+rel+"  "+sw;
+    logMessageSended (false, log);
 };
 exports.sendBackAnswerError = function(error_message){
     bot.sendMessage(error_message);

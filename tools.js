@@ -3,7 +3,7 @@
 var rp          = require('request-promise'),
     cheerio     = require('cheerio'),
     windows1252 = require('windows-1252'),
-    fs 			    = require("fs");
+    fs 			= require("fs");
 
 function Node (id,word,r_id,poids) {
   this.id = id;
@@ -47,20 +47,6 @@ exports.isAdjectif = function(word){
     return (tabAdjectifs.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 };
 
-exports.isVerbeIsa = function (word){
-    var tabVerbeIsa = [
-        "est","est-il","est-elle","sont-elles","sont-ils"
-    ];
-    return (tabVerbeIsa.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
-};
-
-exports.isVerbeCarac = function (word){
-    var tabVerbeCarac = [
-        "est","est-il","est-elle","sont-elles","sont-ils"
-    ];
-    return (tabVerbeCarac.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
-};
-
 exports.initialization = function(callback){
     var mc = fs.readFileSync("./Traitement_de_bot/mots_composes.txt","binary");
     var mc_tab = mc.split("\n");
@@ -71,13 +57,10 @@ exports.initialization = function(callback){
         hashmap_mc.set(t[1],t[0]);
     }
 
-    var content = fs.readFileSync("./Traitement_de_bot/heber_19409044_skypebot_ordi.json","utf8");
-    var contentTraite = content.replace(/'/g,'"');
-    var obj2 = JSON.parse(contentTraite);
-
-    callback(hashmap_mc,obj2);
+    callback(hashmap_mc);
 
 };
+/*
 exports.isRelationTrueBis= function(fw, sw,rel,heber_ordi, callback){
 	const tempid = '4'; // l'idMot=4 correspond au mot "ordinateur"
 	var i; var res = -1;
@@ -96,14 +79,49 @@ exports.isRelationTrueBis= function(fw, sw,rel,heber_ordi, callback){
 	callback(res);
 
 };
+*/
 
-exports.isVerbeHasPart = function (word){
-    var tabVerbeHasPart = [
-        "a","a-t-il","a-t-elle","possède"
-    ];
-    return (tabVerbeHasPart.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
+exports.checkComposedWord = function(words_tab,index_verbe,hashmap_mc,callback){
+    //console.log("*** Dans checkComposedWord : \n");
+	for (var i=0;i<index_verbe;i++){
+		let mot = "";
+		i = Number(i);
+
+		let k = 0;
+		for (k=i;k<index_verbe;k++){
+			mot += words_tab[k]+" ";
+		}
+		mot = mot.substring(0,mot.length-1);
+		//console.log("mot = "+mot+"\n");
+
+		if(hashmap_mc.get(mot)!== undefined){
+			words_tab.splice(i,k-1);
+			words_tab[i]=mot;
+			index_verbe = index_verbe - k+1;
+			break;
+		}
+	}
+
+	for (var j=index_verbe+1;j<words_tab.length;j++){
+		let mot = "";
+		j = Number(j);
+
+		let k = 0;
+		for (k=j;k<words_tab.length;k++){
+			mot += words_tab[k]+" ";
+		}
+		mot = mot.substring(0,mot.length-1);
+
+		//console.log("mot = "+mot+"\n");
+
+		if(hashmap_mc.get(mot)!== undefined){
+			words_tab.splice(j,k-1);
+			words_tab[j]=mot;
+		}
+
+	}
+	callback(words_tab,index_verbe);
 };
-
 exports.checkRelationFromRezoAsk = function(fw,sw,rel,callback){
   //var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+fw+"&rel="+rel_id);
   var url = windows1252.encode("http://www.jeuxdemots.org/rezo-ask.php?doinfer=NO&gotermsubmit=Demander&term1="+fw+"&rel="+rel+"&term2="+sw);
@@ -125,24 +143,6 @@ exports.checkRelationFromRezoAsk = function(fw,sw,rel,callback){
           annot : $('anot').text().replace(/\s|;/g,''),
       };
       callback(result);
-      /*
-      formatResultRequest(result, function (data){
-          var max_poids = 0;
-          var max_word = "";
-          for (var i in data){
-              if (data[i].r_id == 4 && data[i].poids >= max_poids){
-                  max_poids = data[i].poids;
-                  max_word = data[i].word;
-              }
-          }
-          //console.log(data);
-          console.log(formatWordFromRequest(max_word));
-          callback(null,formatWordFromRequest(max_word));
-      });
-      */
-
-
-
   })
   .catch((err) => {
       console.log(err);
