@@ -4,11 +4,26 @@ var answers = require('./answers.js'),
 	tools 	= require('./tools.js'),
 	fs 			= require("fs");
 
-/* @return les mots du messages en un tableau */
+/**
+ * Split the message into a table
+ * @param  {string} message
+ * @return {string:table}
+ */
+
 function getWordsFromMessage(message) {
 	return message.split(/ |\'/);
 }
 
+/**
+ * Process the message by doing the following task :
+ * - Parse the message
+ * - Find relation
+ * - Check for composed words
+ * - Check relation from RezoDump
+ * - Send back the answer to the user
+ * @param  {string} message    Message sent by the user
+ * @param  {Map} 	hashmap_mc hashmap containing a lot of potential compound words
+ */
 exports.process = function(message,hashmap_mc)
 {
 	var words = getWordsFromMessage(message);
@@ -18,40 +33,33 @@ exports.process = function(message,hashmap_mc)
 		words.splice(0,2);
 	if (words[words.length-1]=== "?")
 		words.splice(words.length-1);
-
 	findRelation(words,function (index_verbe,words,offset_fw,offset_sw,rel){
 		if (index_verbe == -1){
 			console.log("Erreur verbe non trouvé !!!");
-
-			console.log("relation verbe : "+rel+" \n");
 			console.log(words);
 			answers.sendBackAnswerError("Je n'ai pas réussi à détecter le verbe présent dans la phrase...");
 		}
 		else{
 			tools.checkComposedWord (words,index_verbe,hashmap_mc,function(words_tab,new_index_verbe){
-				/*
-				console.log("\n Dans le callback de checkComposedWord\n");
-				console.log(words_tab);
-				console.log("new index verbe : "+new_index_verbe+" \n");
-				*/
+
 				var fw_id = new_index_verbe+offset_fw;
 				var sw_id = new_index_verbe+offset_sw;
 				var fw = words_tab[fw_id];
 				var sw = words_tab[sw_id];
 
-				//console.log("first word : "+fw+"   second word : "+sw+" index_sw = "+Number(sw_id)+" \n");
-				tools.checkRelationFromRezoAsk(fw,sw,rel,function(result){
-					/*
-					console.log("*** Result from checkRelationFrowRezoDump() : \n");
-					console.log(result);
-					*/
-					answers.sendBackAnswerBis(fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab);
+				tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
+					answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
 				});
+
 			});
 		}
 	});
 };
-
+/**
+ * Find relation by checking the verb in the words table
+ * @param  {string:table}   words
+ * @param  {Function} callback Callback of the function
+ */
 function findRelation(words,callback){
 
 	var rel = "";
@@ -132,11 +140,6 @@ function findRelation(words,callback){
 
 	if (index_verbe != -1){
 		callback(index_verbe,words,offset_fw,offset_sw,rel);
-		/*
-		console.log("relation verbe : "+rel);
-		console.log("index verbe : "+index_verbe);
-		console.log(words);
-		*/
 	}
 	else{
 		callback(-1);
@@ -159,7 +162,7 @@ function isVerbeCarac (word){
 
 function isVerbeHasPart(word){
     var tabVerbeHasPart = [
-        "a","a-t-il","a-t-elle","possède"
+        "a","a-t-il","a-t-elle","possède-t-il","possède-t-elle"
     ];
     return (tabVerbeHasPart.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }

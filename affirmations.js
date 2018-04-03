@@ -24,24 +24,16 @@ exports.process = function(message,hashmap_mc)
 		}
 		else{
 			tools.checkComposedWord (words,index_verbe,hashmap_mc,function(words_tab,new_index_verbe){
-				/*
-				console.log("\n Dans le callback de checkComposedWord\n");
-				console.log(words_tab);
-				console.log("new index verbe : "+new_index_verbe+" \n");
-				*/
 				var fw_id = new_index_verbe+offset_fw;
 				var sw_id = new_index_verbe+offset_sw;
 				var fw = words_tab[fw_id];
 				var sw = words_tab[sw_id];
-
-				//console.log("first word : "+fw+"   second word : "+sw+" index_sw = "+Number(sw_id)+" \n");
-				tools.checkRelationFromRezoAsk(fw,sw,rel,function(result){
-					/*
-					console.log("*** Result from checkRelationFrowRezoDump() : \n");
-					console.log(result);
-					*/
-					answers.sendBackAnswerAffirmation(fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab);
-				});
+                var code = 0;
+                answers.sendBackAnswerAffirmation(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+                /*
+                tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
+					answers.sendBackAnswerAffirmation(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+				});*/
 			});
 		}
 	});
@@ -127,11 +119,6 @@ function findRelation(words,callback){
 
 	if (index_verbe != -1){
 		callback(index_verbe,words,offset_fw,offset_sw,rel);
-		/*
-		console.log("relation verbe : "+rel);
-		console.log("index verbe : "+index_verbe);
-		console.log(words);
-		*/
 	}
 	else{
 		callback(-1);

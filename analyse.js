@@ -5,10 +5,12 @@ var affirmation = require('./affirmations.js'),
 		fs 					= require('fs');
 	//bdd = require('./functions_bdd.js');
 
-
-	/* Fonction principal à appeler dans le bot
-	@param un String contenant le message de l'utilisateur
-	@return un String contenant le message à renvoyer à l'utilisateur */
+	/**
+	 * Function call by bots
+	 * @param  {String} message
+	 * @param  {String} username
+	 * @param  {Map} hashmap
+	 */
 	exports.parse = function(message,username,hashmap)
 	{
 

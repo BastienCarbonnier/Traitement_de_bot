@@ -5,17 +5,11 @@ var rp          = require('request-promise'),
     windows1252 = require('windows-1252'),
     fs 			= require("fs");
 
-function Node (id,word,r_id,poids) {
-  this.id = id;
-  this.word = word;
-  this.r_id = r_id;
-  this.poids = poids;
-}
-
 exports.isQuestion = function(message)
 {
     return message.indexOf("?") != -1;
 };
+
 exports.isArticle = function(word)
 {
     var tabArticles = [
@@ -30,7 +24,7 @@ exports.isArticle = function(word)
 exports.isAdjectif = function(word){
     var tabAdjectifs = [
         "ce","cet","cette","ces", //adjectifs demonst
-		    "mon","ton","son","notre","votre","leur","ma","ta","sa","mes","tes","ses","nos","vos","leurs", // adj possessifs
+		"mon","ton","son","notre","votre","leur","ma","ta","sa","mes","tes","ses","nos","vos","leurs", // adj possessifs
         "aucun", "aucune" , "aucuns", "aucunes",// Adj indéfinis
         "maint", "mainte" , "maints", "maintes",
         "quel que", "quelle que" , "quels que", "quelles que",
@@ -60,29 +54,9 @@ exports.initialization = function(callback){
     callback(hashmap_mc);
 
 };
-/*
-exports.isRelationTrueBis= function(fw, sw,rel,heber_ordi, callback){
-	const tempid = '4'; // l'idMot=4 correspond au mot "ordinateur"
-	var i; var res = -1;
-	for (i in heber_ordi)
-	{
-		if (heber_ordi[i].idMot == tempid && heber_ordi[i].mot == sw)
-		{
-            var relation = heber_ordi[i].relation;
-            if (relation == rel){
-                res= (heber_ordi[i].poid > 0)?1:0;
-    			      callback(res);
-                return;
-            }
-		}
-	}
-	callback(res);
-
-};
-*/
 
 exports.checkComposedWord = function(words_tab,index_verbe,hashmap_mc,callback){
-    //console.log("*** Dans checkComposedWord : \n");
+
 	for (var i=0;i<index_verbe;i++){
 		let mot = "";
 		i = Number(i);
@@ -92,7 +66,6 @@ exports.checkComposedWord = function(words_tab,index_verbe,hashmap_mc,callback){
 			mot += words_tab[k]+" ";
 		}
 		mot = mot.substring(0,mot.length-1);
-		//console.log("mot = "+mot+"\n");
 
 		if(hashmap_mc.get(mot)!== undefined){
 			words_tab.splice(i,k-1);
@@ -112,8 +85,6 @@ exports.checkComposedWord = function(words_tab,index_verbe,hashmap_mc,callback){
 		}
 		mot = mot.substring(0,mot.length-1);
 
-		//console.log("mot = "+mot+"\n");
-
 		if(hashmap_mc.get(mot)!== undefined){
 			words_tab.splice(j,k-1);
 			words_tab[j]=mot;
@@ -123,7 +94,7 @@ exports.checkComposedWord = function(words_tab,index_verbe,hashmap_mc,callback){
 	callback(words_tab,index_verbe);
 };
 exports.checkRelationFromRezoAsk = function(fw,sw,rel,callback){
-  //var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+fw+"&rel="+rel_id);
+
   var url = windows1252.encode("http://www.jeuxdemots.org/rezo-ask.php?doinfer=NO&gotermsubmit=Demander&term1="+fw+"&rel="+rel+"&term2="+sw);
 
   const options = {
@@ -149,9 +120,30 @@ exports.checkRelationFromRezoAsk = function(fw,sw,rel,callback){
       callback(err);
   });
 };
-exports.getDataFromRezoDump = function(word,rel_id,callback){
 
-    var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+word+"&rel="+rel_id);
+/**
+ * Make an http request to RezoDump and process the result
+ * @param  {String}   fw       First Word
+ * @param  {String}   sw       Second Word
+ * @param  {String}   rel      Relation
+ * @param  {Function} callback 
+ */
+exports.checkRelationFromRezoDump = function(fw,sw,rel,callback){
+    var relations = {
+        "r_isa" : 6,
+        "r_has_part" : 9,
+        "r_carac" : 17
+    };
+
+    var rel_id = relations[rel];
+    //// TODO: Done !!
+    //// Recupérer les données de la page rezo_dump pour rel_id et first_word
+    //// Récupérer l'id du first word : e;eid;'vache';1;w
+    //// Voir si une relation existe : e;id_sw;secondWord;1;w
+    //// Checker la relation : r;r_id;db_fw_id;db_sw_id;rel_id;w
+    //// Check le poids et appeler callback
+
+    var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+fw+"&rel="+rel_id);
     const options = {
         uri: url,
         encoding: 'binary',
@@ -165,21 +157,33 @@ exports.getDataFromRezoDump = function(word,rel_id,callback){
 
         var result = $('code').text();
 
-        formatResultRequest(result, function (data){
-            var max_poids = 0;
-            var max_word = "";
-            for (var i in data){
-                if (data[i].r_id == 4 && data[i].poids >= max_poids){
-                    max_poids = data[i].poids;
-                    max_word = data[i].word;
+        getFirstWordID(result,fw,function(db_fw_id){
+            getSecondWordID(result,sw,function(db_sw_id){
+                if (db_sw_id == -1){
+                    console.log("Pas de relations entrantes");
+                    callback(-1);
                 }
-            }
-            //console.log(data);
-            console.log(formatWordFromRequest(max_word));
-            callback(null,formatWordFromRequest(max_word));
+                else{
+                    getRelationPoids(result,fw,sw,db_fw_id,db_sw_id,rel_id,function(rel_poids){
+
+                        if (rel_poids != null){
+                            console.log("\nPoids relation : "+rel_poids);
+                            if (rel_poids>0){
+                                callback(1);
+                            }
+                            else{
+                                callback(0);
+                            }
+                        }
+                        else {
+                            console.log("Poids inconnu !");
+                            callback(-1);
+                        }
+                    });
+
+                }
+            });
         });
-
-
 
 
     })
@@ -189,19 +193,40 @@ exports.getDataFromRezoDump = function(word,rel_id,callback){
     });
 };
 
-function formatWordFromRequest(word){
-    return word.substring(1,word.length - 2);
+function getRelationPoids(data,fw,sw,fw_id,sw_id,rel_id,callback){
+    var regex = new RegExp("r;\\d*;"+fw_id+";"+sw_id+";"+rel_id+";(-|)\\d*","g");
+    var res = data.match(regex);
+
+    if (res != null){
+        var tab_res = res[0].split(";");
+        callback(tab_res[5]);
+    }
+    else{
+        callback(null);
+    }
+
+}
+function getFirstWordID (data,fw,callback){
+    var regex = new RegExp("e;\\d*;'"+fw+"';\\d*;\\d*","g");
+    var res = data.match(regex);
+    if (res != null){
+        var tab_res = res[0].split(";");
+        callback(tab_res[1]);
+    }
+    else{
+        callback(-1);
+    }
+
 }
 
-function formatResultRequest(data,callback){
-    // regex (e;\d.*)
-    var res =data.match(/(e;\d.*)/g);
-
-    var tab_Node = [];
-
-    for (var i in res){
-        var split_node = res[i].split(";");
-        tab_Node[i] = new Node(split_node[1],split_node[2],split_node[3],split_node[4]);
+function getSecondWordID (data,sw,callback){
+    var regex = new RegExp("e;\\d*;'"+sw+"';\\d*;\\d*","g");
+    var res = data.match(regex);
+    if (res != null){
+        var tab_res = res[0].split(";");
+        callback(tab_res[1]);
     }
-    callback(tab_Node);
+    else{
+        callback(-1);
+    }
 }
