@@ -148,14 +148,14 @@ function findRelation(words,callback){
 
 function isVerbeIsa(word){
     var tabVerbeIsa = [
-        "est","est-il","est-elle","sont-elles","sont-ils"
+        "est","sont","est-il","est-elle","sont-elles","sont-ils"
     ];
     return (tabVerbeIsa.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }
 
 function isVerbeCarac (word){
     var tabVerbeCarac = [
-        "est","est-il","est-elle","sont-elles","sont-ils"
+        "est","sont","est-il","est-elle","sont-elles","sont-ils"
     ];
     return (tabVerbeCarac.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }
