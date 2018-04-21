@@ -186,8 +186,8 @@ exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_t
     var fa = getArticleBeforeFirstWord(fw_id,words_tab); // first article
     var sa = getArticleBeforeSecondWord(sw_id,index_verbe,words_tab); // second article
 
-    fa = (fa==-1 ? "" : lowerCaseFirstLetter(fa));
-    sa = (sa==-1 ? "" : lowerCaseFirstLetter(sa));
+    fa = (fa==-1 ? "" : lowerCaseFirstLetter(fa)+" ");
+    sa = (sa==-1 ? "" : " "+lowerCaseFirstLetter(sa));
     if (tools.isArticleContractable(fa)){
         res += getAdverbeAffDebutContractableAleatoire();
     }
@@ -217,8 +217,8 @@ exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_t
             else {
                 return "La réponse pour cette relation n'a pas été implémenté.";
             }
-            res += fa + " " +fw+ " " +
-                   verbe + " " +
+            res += fa +fw+ " " +
+                   verbe +
                    sa + " " + sw ;
         break;
         case 1:
@@ -238,12 +238,12 @@ exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_t
             else {
                 res += "La réponse pour cette relation n'a pas été implémenté.";
             }
-            res += fa + " " +fw+ " " +
-                   verbe + " "+
+            res += fa +fw+ " " +
+                   verbe +
                    sa + " " + sw ;
         break;
         default:
-            res += "Erreur de sortie isRelationTrue";
+            res = getPhraseErreurInconnu();
 
 
     }
