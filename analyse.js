@@ -13,17 +13,21 @@ var affirmation = require('./affirmations.js'),
 	 */
 	exports.parse = function(message,username,hashmap)
 	{
-
+		var words = getWordsFromMessage(message);
 		logMessageReceived (message,username);
-		if (tools.isQuestion(message)){
-			question.process(message,hashmap);
-		}
-		else{
-			affirmation.process(message,hashmap);
-		}
+		tools.isQuestion(words,function(res,words){
+			if (res){
+				question.process(words,hashmap);
+			}
+			else {
+				affirmation.process(words,hashmap);
+			}
+		});
 
 	};
-
+	function getWordsFromMessage(message) {
+		return message.split(/ |\'/);
+	}
 	function logMessageReceived (message,username){
 		var date = new Date();
 		var month = date.getMonth()+1;

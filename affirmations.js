@@ -6,9 +6,9 @@ var tools = require('./tools.js'),
 
 
 
-exports.process = function(message,hashmap_mc)
+exports.process = function(words,hashmap_mc)
 {
-    var words = getWordsFromMessage(message);
+
 	var rel = "";
 
 	if (words[words.length-1]=== ".")
@@ -124,10 +124,6 @@ function findRelation(words,callback){
 		callback(-1);
 	}
 
-}
-
-function getWordsFromMessage(message){
-    return message.split(/ |\'/);
 }
 
 function isVerbeIsa(word){

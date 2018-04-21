@@ -66,9 +66,37 @@ function getVerbeNegHasPartAleatoire(){
     return listVerbeNegHasPart[numRandom];
 }
 
+function getVerbeAffAgent_1Aleatoire(){
+    var listVerbeAffAgent_1 = [
+        "peut","peut bien","a la possibilité de"
+    ];
+
+    var numRandom = Math.floor(Math.random()*listVerbeAffAgent_1.length);
+
+    return listVerbeAffAgent_1[numRandom];
+}
+function getVerbeNegAgent_1Aleatoire(){
+    var listVerbeNegAgent_1 = [
+        "ne peut pas","n'a pas la possibilité de"
+    ];
+
+    var numRandom = Math.floor(Math.random()*listVerbeNegAgent_1.length);
+
+    return listVerbeNegAgent_1[numRandom];
+}
+
 function getAdverbeAffDebutAleatoire(){
     var listAdverbeAffDebut = [
-        "En effet, ","Il se trouve que ","En vérité, ","",""
+        "En effet, ","Il se trouve que ","Oui, ",""
+    ];
+
+    var numRandom = Math.floor(Math.random()*listAdverbeAffDebut.length);
+
+    return listAdverbeAffDebut[numRandom];
+}
+function getAdverbeAffDebutContractableAleatoire(){
+    var listAdverbeAffDebut = [
+        "En effet, ","Il se trouve qu'","Oui, ",""
     ];
 
     var numRandom = Math.floor(Math.random()*listAdverbeAffDebut.length);
@@ -86,7 +114,10 @@ function lowerCaseFirstLetter(string){
 
 function getArticleBeforeFirstWord(id_word,words_tab){
     if (id_word>0){
-        return words_tab[id_word-1];
+        if (tools.isArticle(words_tab[id_word-1]))
+            return words_tab[id_word-1];
+        else
+            return -1;
     }
     else{
         return -1;
@@ -101,7 +132,11 @@ function getArticleBeforeSecondWord(id_word,index_verbe,words_tab){
     console.log("\n");
     */
     if (id_word>0 && id_word>index_verbe+1){
-        return words_tab[id_word-1];
+        if (tools.isArticle(words_tab[id_word-1]))
+            return words_tab[id_word-1];
+        else {
+            return -1;
+        }
     }
     else{
         return -1;
@@ -138,8 +173,7 @@ function getPhraseErreurInconnu(){
     return listPhraseErreur[numRandom];
 }
 
-exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab)
-{
+exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab){
     var res = "";
     var verbe = "";
 
@@ -154,7 +188,13 @@ exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_t
 
     fa = (fa==-1 ? "" : lowerCaseFirstLetter(fa));
     sa = (sa==-1 ? "" : lowerCaseFirstLetter(sa));
-    res += getAdverbeAffDebutAleatoire();
+    if (tools.isArticleContractable(fa)){
+        res += getAdverbeAffDebutContractableAleatoire();
+    }
+    else{
+        res += getAdverbeAffDebutAleatoire();
+    }
+
     switch (code) {
         case -1: //ne sait pas
             res = getPhraseErreurInconnu();
@@ -170,6 +210,9 @@ exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_t
             }
             else if (rel === "r_has_part") {
                 verbe = getVerbeNegHasPartAleatoire();
+            }
+            else if (rel === "r_agent_1") {
+                verbe = getVerbeNegAgent_1Aleatoire();
             }
             else {
                 return "La réponse pour cette relation n'a pas été implémenté.";
@@ -188,6 +231,9 @@ exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_t
             }
             else if (rel === "r_has_part") {
                 verbe = getVerbeAffHasPartAleatoire();
+            }
+            else if (rel === "r_agent_1") {
+                verbe = getVerbeAffAgent_1Aleatoire();
             }
             else {
                 res += "La réponse pour cette relation n'a pas été implémenté.";
@@ -218,6 +264,7 @@ exports.sendBackAnswerAffirmation = function (fw,sw,fw_id,sw_id,index_verbe,rel,
     var log = fw+"  "+rel+"  "+sw;
     logMessageSended (false, log);
 };
+
 exports.sendBackAnswerError = function(error_message){
     bot.sendMessage(error_message);
 };

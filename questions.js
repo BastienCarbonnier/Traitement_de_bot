@@ -10,9 +10,7 @@ var answers = require('./answers.js'),
  * @return {string:table}
  */
 
-function getWordsFromMessage(message) {
-	return message.split(/ |\'/);
-}
+
 
 /**
  * Process the message by doing the following task :
@@ -24,9 +22,9 @@ function getWordsFromMessage(message) {
  * @param  {string} message    Message sent by the user
  * @param  {Map} 	hashmap_mc hashmap containing a lot of potential compound words
  */
-exports.process = function(message,hashmap_mc)
+exports.process = function(words,hashmap_mc)
 {
-	var words = getWordsFromMessage(message);
+
 	var rel = "";
 
 	if (words[0] === "Est-ce" && words[1]=== "que")
@@ -37,6 +35,8 @@ exports.process = function(message,hashmap_mc)
 		if (index_verbe == -1){
 			console.log("Erreur verbe non trouvé !!!");
 			console.log(words);
+			console.log(rel);
+			console.log(index_verbe);
 			answers.sendBackAnswerError("Je n'ai pas réussi à détecter le verbe présent dans la phrase...");
 		}
 		else{
@@ -47,6 +47,12 @@ exports.process = function(message,hashmap_mc)
 				var fw = words_tab[fw_id];
 				var sw = words_tab[sw_id];
 
+				console.log("index_verbe : "+index_verbe);
+				console.log("new_index : "+new_index_verbe);
+				console.log("First word : "+fw);
+				console.log("Second word : "+sw);
+				console.log(words_tab);
+				
 				tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
 					answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
 				});
@@ -101,7 +107,8 @@ function findRelation(words,callback){
 			rel = "r_has_part";
 			break;
 		}
-		else if (w === "peut-il"||w === "peut-elle"||w === "peuvent-ils"||w === "peuvent-elles"){
+		else if (isVerbeAgent_1(w)){
+			var secondPart = getYword(i+1,words);
 			if(i+1 < words.length && (words[i+1]=== "être"||words[i+1]=== "etre")){
 
 				if(i+2 < words.length && tools.isArticle(words[i+2])){
@@ -133,6 +140,14 @@ function findRelation(words,callback){
 				rel = "r_has_part";
 				break;
 			}
+			else if (isVerbe(secondPart)){
+				var secondPartLength = words.length-i;
+				words.splice(i+1,secondPartLength);
+				words[i+1] = secondPart;
+				index_verbe = i;
+				rel = "r_agent_1";
+				console.log(words);
+			}
 
 		}
 	}
@@ -142,10 +157,20 @@ function findRelation(words,callback){
 		callback(index_verbe,words,offset_fw,offset_sw,rel);
 	}
 	else{
-		callback(-1);
+		callback(-1,words,rel);
 	}
 }
-
+function getYword (index,words){
+	var y = "";
+	for (var i = index;i<words.length-1;i++){
+		y+=words[i]+" ";
+	}
+	y+= words[words.length-1];
+	return y;
+}
+function isVerbe(word){
+	return true;
+}
 function isVerbeIsa(word){
     var tabVerbeIsa = [
         "est","sont","est-il","est-elle","sont-elles","sont-ils"
@@ -165,4 +190,11 @@ function isVerbeHasPart(word){
         "a","a-t-il","a-t-elle","possède-t-il","possède-t-elle"
     ];
     return (tabVerbeHasPart.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
+}
+
+function isVerbeAgent_1(word){
+	var tabVerbeAgent_1 = [
+        "peut","peut-il","peut-elle","peuvent-ils","peuvent-elles"
+    ];
+    return (tabVerbeAgent_1.indexOf(word.toLowerCase())!=-1);
 }

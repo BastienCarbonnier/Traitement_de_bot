@@ -5,13 +5,62 @@ var rp          = require('request-promise'),
     windows1252 = require('windows-1252'),
     fs 			= require("fs");
 
-exports.isQuestion = function(message)
-{
-    return message.indexOf("?") != -1;
-};
+exports.isQuestion = function(words,callback){
+    if (words.indexOf("?") != -1 ){
+        callback(true,words);
+        return;
+    }
+    else if(words[0]==="Est-ce"&&(words[1]==="que")){
+        words.splice(0,2);
+        callback(true,words);
+        return;
+    }
+    else if(words[0]==="Est"&&words[1]==="ce"&&words[2]==="que"){
+        words.splice(0,3);
+        callback(true,words);
+        return;
+    }
+    else{
+        for (var i in words){
+            if (isVerbeIsa(words[i])||isVerbeCarac(words[i])||isVerbeHasPart(words[i])||isVerbeAgent_1(words[i])){
+                callback(true,words);
+                return;
+            }
 
-exports.isArticle = function(word)
-{
+        }
+    }
+    callback(false,words);
+};
+function isVerbeIsa(word){
+    var tabVerbeIsa = [
+        "est-il","est-elle","sont-elles","sont-ils"
+    ];
+    return (tabVerbeIsa.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
+}
+
+function isVerbeCarac (word){
+    var tabVerbeCarac = [
+        "est-il","est-elle","sont-elles","sont-ils"
+    ];
+    return (tabVerbeCarac.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
+}
+
+function isVerbeHasPart(word){
+    var tabVerbeHasPart = [
+        "a-t-il","a-t-elle","possède-t-il","possède-t-elle"
+    ];
+    return (tabVerbeHasPart.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
+}
+
+function isVerbeAgent_1(word){
+	var tabVerbeAgent_1 = [
+        "peut-il","peut-elle","peuvent-ils","peuvent-elles"
+    ];
+    return (tabVerbeAgent_1.indexOf(word.toLowerCase())!=-1);
+}
+
+
+exports.isArticle = function(word){
     var tabArticles = [
 		    "le","la","l","les", //article definis
 		    "une","un","uns","unes","des","d", // article indefini
@@ -21,6 +70,16 @@ exports.isArticle = function(word)
 
 	return (tabArticles.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 };
+exports.isArticleContractable =function (art){
+    var listArticleContr = [
+        "une","un","uns","unes","au","aux"
+    ];
+
+    var numRandom = Math.floor(Math.random()*listArticleContr.length);
+
+    return listArticleContr[numRandom];
+};
+
 exports.isAdjectif = function(word){
     var tabAdjectifs = [
         "ce","cet","cette","ces", //adjectifs demonst
@@ -68,9 +127,9 @@ exports.checkComposedWord = function(words_tab,index_verbe,hashmap_mc,callback){
 		mot = mot.substring(0,mot.length-1);
 
 		if(hashmap_mc.get(mot)!== undefined){
-			words_tab.splice(i,k-1);
+			words_tab.splice(i,k-2);
 			words_tab[i]=mot;
-			index_verbe = index_verbe - k+1;
+			index_verbe = index_verbe - k+2;
 			break;
 		}
 	}
@@ -126,15 +185,16 @@ exports.checkRelationFromRezoAsk = function(fw,sw,rel,callback){
  * @param  {String}   fw       First Word
  * @param  {String}   sw       Second Word
  * @param  {String}   rel      Relation
- * @param  {Function} callback 
+ * @param  {Function} callback
  */
 exports.checkRelationFromRezoDump = function(fw,sw,rel,callback){
     var relations = {
         "r_isa" : 6,
         "r_has_part" : 9,
-        "r_carac" : 17
+        "r_carac" : 17,
+        "r_agent_1" : 24
     };
-
+    console.log("relation : "+rel);
     var rel_id = relations[rel];
     //// TODO: Done !!
     //// Recupérer les données de la page rezo_dump pour rel_id et first_word
@@ -142,6 +202,7 @@ exports.checkRelationFromRezoDump = function(fw,sw,rel,callback){
     //// Voir si une relation existe : e;id_sw;secondWord;1;w
     //// Checker la relation : r;r_id;db_fw_id;db_sw_id;rel_id;w
     //// Check le poids et appeler callback
+
 
     var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+fw+"&rel="+rel_id);
     const options = {
@@ -186,6 +247,36 @@ exports.checkRelationFromRezoDump = function(fw,sw,rel,callback){
         });
 
 
+    })
+    .catch((err) => {
+        console.log(err);
+        callback(err);
+    });
+};
+
+exports.wordIsInDatabase = function(word,callback){
+
+    var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+fw+"&rel=1");
+    const options = {
+        uri: url,
+        encoding: 'binary',
+        transform: function (body) {
+            return cheerio.load(body, {decodeEntities: false});
+        }
+    };
+
+    rp(options)
+    .then(($) => {
+
+        var result = $('code').text();
+        var regex = new RegExp("e;\\d*;"+word+";1;\\d*","g");
+        var res = data.match(regex);
+        if (res == null){
+            callback(false);
+        }
+        else{
+            callback(true);
+        }
     })
     .catch((err) => {
         console.log(err);
