@@ -2,11 +2,12 @@
 
 var tools = require('./tools.js'),
     answers = require('./answers.js'),
-    fs    = require("fs");
+    fs    = require("fs"),
+    request    = require('./../request.js');
 
 
 
-exports.process = function(words,hashmap_mc)
+exports.process = function(words,username,hashmap_mc)
 {
 
 	var rel = "";
@@ -29,7 +30,14 @@ exports.process = function(words,hashmap_mc)
 				var fw = words_tab[fw_id];
 				var sw = words_tab[sw_id];
                 var code = 0;
+
                 answers.sendBackAnswerAffirmation(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+                /*
+                request.insertRelation(fw_id,sw_id,rel_id,username,function(){
+                    answers.sendBackAnswerAffirmation(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+                });*/
+
+
                 /*
                 tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
 					answers.sendBackAnswerAffirmation(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
@@ -80,7 +88,8 @@ function findRelation(words,callback){
 			rel = "r_has_part";
 			break;
 		}
-		else if (w === "peut"){
+		else if (isVerbeAgent_1(w)){
+            var secondPart = getYword(i+1,words);
 			if(i+1 < words.length && (words[i+1]=== "être"||words[i+1]=== "etre")){
 
 				if(i+2 < words.length && tools.isArticle(words[i+2])){
@@ -112,6 +121,14 @@ function findRelation(words,callback){
 				rel = "r_has_part";
 				break;
 			}
+            else if (isVerbe(secondPart)){
+				var secondPartLength = words.length-i;
+				words.splice(i+1,secondPartLength);
+				words[i+1] = secondPart;
+				index_verbe = i;
+				rel = "r_agent_1";
+				console.log(words);
+			}
 
 		}
 	}
@@ -124,6 +141,18 @@ function findRelation(words,callback){
 		callback(-1);
 	}
 
+}
+function isVerbe(word){
+	return true;
+}
+
+function getYword (index,words){
+	var y = "";
+	for (var i = index;i<words.length-1;i++){
+		y+=words[i]+" ";
+	}
+	y+= words[words.length-1];
+	return y;
 }
 
 function isVerbeIsa(word){
@@ -145,4 +174,10 @@ function isVerbeHasPart(word){
         "a","possède","peut-avoir"
     ];
     return (tabVerbeHasPart.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
+}
+function isVerbeAgent_1(word){
+	var tabVerbeAgent_1 = [
+        "peut"
+    ];
+    return (tabVerbeAgent_1.indexOf(word.toLowerCase())!=-1);
 }

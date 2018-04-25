@@ -254,7 +254,7 @@ exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_t
 };
 
 exports.sendBackAnswerAffirmation = function (fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab){
-    var mes = "Très bien j'enregistre les informations suivantes :";
+    var mes = "Très bien ! Je retiens les informations suivantes";
     bot.sendMessage(mes);
     mes = "Premier mot : "+ fw + "  Deuxième mot : "+sw+"\n";
     bot.sendMessage(mes);

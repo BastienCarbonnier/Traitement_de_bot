@@ -5,18 +5,56 @@ var rp          = require('request-promise'),
     windows1252 = require('windows-1252'),
     fs 			= require("fs");
 
+exports.isArticle = function(word){
+    var tabArticles = [
+        "le","la","l","les", //article definis
+        "une","un","uns","unes","des","d", // article indefini
+        "du","de la","de l",// article partatifs
+        "au","aux" // article def contracté
+    ];
+
+    return (tabArticles.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
+};
+
 exports.isQuestion = function(words,callback){
     if (words.indexOf("?") != -1 ){
+        words.splice(words.length-1);
+    }
+    if(words[0]==="Est-ce"){
+        if (words[2]==="que"){
+            words.splice(0,2);
+        }
+        else{
+            var w1_tab = words[1].split(/\'/);
+            console.log(w1_tab);
+            if (w1_tab.length>1){
+                words.splice(0,1);
+                words[0] = w1_tab[1];
+            }
+            else{
+                words.splice(0,2);
+            }
+        }
+        console.log(words);
         callback(true,words);
         return;
     }
-    else if(words[0]==="Est-ce"&&(words[1]==="que")){
-        words.splice(0,2);
-        callback(true,words);
-        return;
-    }
-    else if(words[0]==="Est"&&words[1]==="ce"&&words[2]==="que"){
-        words.splice(0,3);
+    else if(words[0]==="Est"&&words[1]==="ce"){
+        if (words[2]==="que"){
+            words.splice(0,3);
+        }
+        else{
+            var w2_tab = words[2].split(/\'/);
+
+            if (w2_tab.length>1&&isArticle(w2_tab[1])){
+                words.splice(0,2);
+                words[0] = w2_tab[1];
+            }
+            else{
+                words.splice(0,3);
+            }
+        }
+
         callback(true,words);
         return;
     }
@@ -59,17 +97,6 @@ function isVerbeAgent_1(word){
     return (tabVerbeAgent_1.indexOf(word.toLowerCase())!=-1);
 }
 
-
-exports.isArticle = function(word){
-    var tabArticles = [
-		    "le","la","l","les", //article definis
-		    "une","un","uns","unes","des","d", // article indefini
-        "du","de la","de l",// article partatifs
-        "au","aux" // article def contracté
-	];
-
-	return (tabArticles.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
-};
 exports.isArticleContractable =function (art){
     var listArticleContr = [
         "une","un","uns","unes","au","aux"
@@ -203,84 +230,62 @@ exports.checkRelationFromRezoDump = function(fw,sw,rel,callback){
     //// Checker la relation : r;r_id;db_fw_id;db_sw_id;rel_id;w
     //// Check le poids et appeler callback
 
+    makeGetRequestRezoDump(fw,rel_id,null,function(err, result){
+        if (err) callback(-1);
+        else{
+            getFirstWordID(result,fw,function(db_fw_id){
+                getSecondWordID(result,sw,function(db_sw_id){
+                    if (db_sw_id == -1){
+                        console.log("Pas de relations entrantes");
+                        console.log("Lancement Inferences Live : ");
+                        makeLiveInference(fw,sw,db_fw_id,db_sw_id,rel_id,function(){
 
-    var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+fw+"&rel="+rel_id);
-    const options = {
-        uri: url,
-        encoding: 'binary',
-        transform: function (body) {
-            return cheerio.load(body, {decodeEntities: false});
-        }
-    };
+                        });
+                        callback(-1);
+                    }
+                    else{
+                        getRelationPoids(result,fw,sw,db_fw_id,db_sw_id,rel_id,function(rel_poids){
 
-    rp(options)
-    .then(($) => {
-
-        var result = $('code').text();
-
-        getFirstWordID(result,fw,function(db_fw_id){
-            getSecondWordID(result,sw,function(db_sw_id){
-                if (db_sw_id == -1){
-                    console.log("Pas de relations entrantes");
-                    callback(-1);
-                }
-                else{
-                    getRelationPoids(result,fw,sw,db_fw_id,db_sw_id,rel_id,function(rel_poids){
-
-                        if (rel_poids != null){
-                            console.log("\nPoids relation : "+rel_poids);
-                            if (rel_poids>0){
-                                callback(1);
+                            if (rel_poids != null){
+                                console.log("\nPoids relation : "+rel_poids);
+                                if (rel_poids>0){
+                                    callback(1);
+                                }
+                                else{
+                                    callback(0);
+                                }
                             }
-                            else{
-                                callback(0);
+                            else {
+                                console.log("Poids inconnu !");
+                                callback(-1);
                             }
-                        }
-                        else {
-                            console.log("Poids inconnu !");
-                            callback(-1);
-                        }
-                    });
+                        });
 
-                }
+                    }
+                });
             });
-        });
+        }
 
-
-    })
-    .catch((err) => {
-        console.log(err);
-        callback(err);
     });
 };
 
 exports.wordIsInDatabase = function(word,callback){
 
-    var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+fw+"&rel=1");
-    const options = {
-        uri: url,
-        encoding: 'binary',
-        transform: function (body) {
-            return cheerio.load(body, {decodeEntities: false});
+    makeGetRequestRezoDump(word,1,function(err, result){
+        if (!err){
+            var regex = new RegExp("e;\\d*;"+word+";1;\\d*","g");
+            var res = data.match(regex);
+            if (res == null){
+                callback(false);
+            }
+            else{
+                callback(true);
+            }
         }
-    };
-
-    rp(options)
-    .then(($) => {
-
-        var result = $('code').text();
-        var regex = new RegExp("e;\\d*;"+word+";1;\\d*","g");
-        var res = data.match(regex);
-        if (res == null){
+        else {
             callback(false);
         }
-        else{
-            callback(true);
-        }
-    })
-    .catch((err) => {
-        console.log(err);
-        callback(err);
+
     });
 };
 
@@ -297,6 +302,7 @@ function getRelationPoids(data,fw,sw,fw_id,sw_id,rel_id,callback){
     }
 
 }
+
 function getFirstWordID (data,fw,callback){
     var regex = new RegExp("e;\\d*;'"+fw+"';\\d*;\\d*","g");
     var res = data.match(regex);
@@ -321,3 +327,143 @@ function getSecondWordID (data,sw,callback){
         callback(-1);
     }
 }
+
+function getRelationsSortantes(fw,rel_id,callback){
+
+    makeGetRequestRezoDump(fw,rel_id,"&relin=norelin",function(err, result){
+        if (!err){
+
+            var regex_rs = new RegExp("r;\\d*;\\d*;\\d*;\\d*;(-|)\\d*","g");
+            var rs = result.match(regex_rs);
+            //console.log(rs);
+            var n3_tab = [];
+            var w_tab = [];
+            if (rs != null){
+                for (var i in rs){
+                    var tab_rs = rs[i].split(";");
+                    if (Number(tab_rs[5])>0){
+                        n3_tab[n3_tab.length] = Number(tab_rs[3]);
+                        w_tab[w_tab.length] = Number(tab_re[5]);
+                    }
+                }
+                callback(null,n3_tab,w_tab);
+            }
+            else{
+                callback(-1);
+            }
+
+        }
+        else {
+            callback(-1);
+        }
+
+    });
+}
+function getRelationsEntrantes(sw,rel_id,callback){
+
+    makeGetRequestRezoDump(sw,rel_id,"&relout=norelout",function(err, result){
+        if (!err){
+
+            var regex_re = new RegExp("r;\\d*;\\d*;\\d*;\\d*;(-|)\\d*","g");
+            var re = result.match(regex_re);
+            //console.log(re);
+            var n3_tab = [];
+            var w_tab = [];
+            if (re != null){
+                for (var i in re){
+                    var tab_re = re[i].split(";");
+                    n3_tab[n3_tab.length] = Number(tab_re[2]);
+                    w_tab[w_tab.length] = Number(tab_re[5]);
+                }
+                callback(null,n3_tab,w_tab);
+            }
+            else{
+                callback(-1);
+            }
+
+        }
+        else {
+            callback(-1);
+        }
+
+    });
+}
+function makeLiveInference (fw,sw,db_fw_id,db_sw_id,rel_id,callback){
+
+    getRelationsSortantes(fw,6,function(err,rs,w_tab_rs){
+
+        console.log("Je suis dans makeLiveInference() : ");
+        //console.log(rs);
+        getRelationsEntrantes(sw,rel_id,function(err,re,w_tab_re){
+            findInference(rs,re,w_tab_rs,w_tab_re,function(index,poids){
+                console.log("rs = re =  "+ rs[index]);
+                console.log("Poids relation = "+poids);
+            });
+
+
+        });
+
+
+    });
+
+
+
+}
+function findInference (rs,re,w_tab_rs,w_tab_re,callback){
+    var max_index_rs=-1;
+    var max_poids_rs =-1;
+    var i;
+    for(i in rs){
+        var index = re.indexOf(rs[i]);
+        if (index != -1){
+            if(w_tab_rs[i]>max_poids_rs){
+                max_poids_rs = w_tab_rs[i];
+                max_index_rs = rs[i];
+            }
+
+        }
+    }
+    if(i==rs.length-1){
+        callback(max_index_rs,max_poids_rs);
+    }
+
+}
+
+function makeGetRequestRezoDump(word,rel_id,param,callback){
+    var url = windows1252.encode("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel="+word+"&rel="+rel_id+(param==null?"":param));
+    console.log(url);
+    const options = {
+        uri: url,
+        encoding: 'binary',
+        transform: function (body) {
+            return cheerio.load(body, {decodeEntities: false});
+        }
+    };
+
+    rp(options)
+    .then(($) => {
+
+        var result = $('code').text();
+        callback(null,result);
+
+
+    })
+    .catch((err) => {
+        console.log(err);
+        callback(err);
+    });
+}
+
+// TODO: Inférences live :
+/*N1 t N2
+
+Vérification si la relation est déjà présente ainsi
+Si oui OK
+
+Si non :
+   - récupération des relations sortantes de n1 avec relation 6 (r_isa)
+   - récupération des relations entrantes de n2 avec relation t
+
+   - Recherche si il existe un n3 tel que [ n1 6 n3 ] ET [ n3 t n2 ]
+
+*/

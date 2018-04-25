@@ -17,16 +17,16 @@ var affirmation = require('./affirmations.js'),
 		logMessageReceived (message,username);
 		tools.isQuestion(words,function(res,words){
 			if (res){
-				question.process(words,hashmap);
+				question.process(words,username,hashmap);
 			}
 			else {
-				affirmation.process(words,hashmap);
+				affirmation.process(words,username,hashmap);
 			}
 		});
 
 	};
 	function getWordsFromMessage(message) {
-		return message.split(/ |\'/);
+		return message.split(/ /);
 	}
 	function logMessageReceived (message,username){
 		var date = new Date();

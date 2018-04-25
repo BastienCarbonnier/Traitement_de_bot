@@ -2,7 +2,8 @@
 
 var answers = require('./answers.js'),
 	tools 	= require('./tools.js'),
-	fs 			= require("fs");
+	fs 			= require("fs"),
+	request    = require('./../request.js');
 
 /**
  * Split the message into a table
@@ -22,15 +23,11 @@ var answers = require('./answers.js'),
  * @param  {string} message    Message sent by the user
  * @param  {Map} 	hashmap_mc hashmap containing a lot of potential compound words
  */
-exports.process = function(words,hashmap_mc)
+exports.process = function(words,username,hashmap_mc)
 {
 
 	var rel = "";
 
-	if (words[0] === "Est-ce" && words[1]=== "que")
-		words.splice(0,2);
-	if (words[words.length-1]=== "?")
-		words.splice(words.length-1);
 	findRelation(words,function (index_verbe,words,offset_fw,offset_sw,rel){
 		if (index_verbe == -1){
 			console.log("Erreur verbe non trouvé !!!");
@@ -52,10 +49,39 @@ exports.process = function(words,hashmap_mc)
 				console.log("First word : "+fw);
 				console.log("Second word : "+sw);
 				console.log(words_tab);
-				
+
+				var relations = {
+					"r_isa" : 6,
+					"r_has_part" : 9,
+					"r_carac" : 17,
+					"r_agent_1" : 24
+				};
+
 				tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
 					answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
 				});
+
+				/*
+				request.isRelationInBDD(fw,sw,relations(rel),function(err,res){
+					if (err){
+						tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
+							answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+						});
+					}
+					else{
+						if(res){
+							answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab);
+						}
+						else{
+							tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
+								answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+							});
+						}
+					}
+				});
+				*/
+
+
 
 			});
 		}
