@@ -252,6 +252,96 @@ exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_t
     bot.sendMessage(message);
 
 };
+exports.sendBackAnswerWithInference = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3){
+    var res = "";
+    var verbe = "";
+
+    if (fw === -1 || sw === -1){
+        var reponse = getPhraseErreurComique();
+        logMessageSended(true, reponse);
+        bot.sendMessage(reponse);
+        return;
+    }
+    var fa = getArticleBeforeFirstWord(fw_id,words_tab); // first article
+    var sa = getArticleBeforeSecondWord(sw_id,index_verbe,words_tab); // second article
+
+    fa = (fa==-1 ? "" : lowerCaseFirstLetter(fa)+" ");
+    sa = (sa==-1 ? "" : " "+lowerCaseFirstLetter(sa));
+
+
+    if (tools.isArticleContractable(fa)){
+        advDebut = getAdverbeAffDebutContractableAleatoire();
+        res += getAdverbeAffDebutContractableAleatoire();
+    }
+    else{
+        advDebut = getAdverbeAffDebutContractableAleatoire();
+        res += getAdverbeAffDebutAleatoire();
+    }
+
+
+    switch (code) {
+        case -1: //ne sait pas
+            res = getPhraseErreurInconnu();
+        break;
+
+        case 0:
+
+            if (rel === "r_carac"){
+                verbe = getVerbeNegIsaOrCaracAleatoire();
+            }
+            else if (rel === "r_isa"){
+                verbe = getVerbeNegIsaOrCaracAleatoire();
+            }
+            else if (rel === "r_has_part") {
+                verbe = getVerbeNegHasPartAleatoire();
+            }
+            else if (rel === "r_agent_1") {
+                verbe = getVerbeNegAgent_1Aleatoire();
+            }
+            else {
+                res = "La réponse pour cette relation n'a pas été implémenté.";
+            }
+            res += fa +fw+ " " +
+                   verbe +
+                   sa + " " + sw;
+            if(n3 != null){
+                res+= " par déduction car "+fa+fw+" "+getVerbeAffIsaOrCaracAleatoire()+" "+n3;
+            }
+        break;
+        case 1:
+
+            if (rel === "r_carac"){
+                verbe = getVerbeAffIsaOrCaracAleatoire();
+            }
+            else if (rel === "r_isa"){
+                verbe = getVerbeAffIsaOrCaracAleatoire();
+            }
+            else if (rel === "r_has_part") {
+                verbe = getVerbeAffHasPartAleatoire();
+            }
+            else if (rel === "r_agent_1") {
+                verbe = getVerbeAffAgent_1Aleatoire();
+            }
+            else {
+                res = "La réponse pour cette relation n'a pas été implémenté.";
+            }
+            res += fa +fw+ " " +
+                   verbe +
+                   sa + " " + sw;
+            if(n3 != null){
+               res+= " par déduction car "+fa+fw+" "+getVerbeAffIsaOrCaracAleatoire()+" "+n3;
+            }
+        break;
+        default:
+            res = getPhraseErreurInconnu();
+
+
+    }
+    var message = capitalizeFirstLetter(res) + ".";
+    logMessageSended (false, message);
+    bot.sendMessage(message);
+
+};
 
 exports.sendBackAnswerAffirmation = function (fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab){
     var mes = "Très bien ! Je retiens les informations suivantes";

@@ -238,10 +238,21 @@ exports.checkRelationFromRezoDump = function(fw,sw,rel,callback){
                     if (db_sw_id == -1){
                         console.log("Pas de relations entrantes");
                         console.log("Lancement Inferences Live : ");
-                        makeLiveInference(fw,sw,db_fw_id,db_sw_id,rel_id,function(){
-
+                        makeLiveInference(fw,sw,db_fw_id,db_sw_id,rel_id,function(err,id_n3,w_rel){
+                            if (w_rel != null){
+                                console.log("\nPoids relation : "+w_rel);
+                                if (w_rel>0){
+                                    callback(1,true,id_n3);
+                                }
+                                else{
+                                    callback(0,true,id_n3);
+                                }
+                            }
+                            else {
+                                console.log("Poids inconnu !");
+                                callback(-1);
+                            }
                         });
-                        callback(-1);
                     }
                     else{
                         getRelationPoids(result,fw,sw,db_fw_id,db_sw_id,rel_id,function(rel_poids){
@@ -343,7 +354,7 @@ function getRelationsSortantes(fw,rel_id,callback){
                     var tab_rs = rs[i].split(";");
                     if (Number(tab_rs[5])>0){
                         n3_tab[n3_tab.length] = Number(tab_rs[3]);
-                        w_tab[w_tab.length] = Number(tab_re[5]);
+                        w_tab[w_tab.length] = Number(tab_rs[5]);
                     }
                 }
                 callback(null,n3_tab,w_tab);
@@ -393,11 +404,12 @@ function makeLiveInference (fw,sw,db_fw_id,db_sw_id,rel_id,callback){
     getRelationsSortantes(fw,6,function(err,rs,w_tab_rs){
 
         console.log("Je suis dans makeLiveInference() : ");
-        //console.log(rs);
+        console.log(rs);
         getRelationsEntrantes(sw,rel_id,function(err,re,w_tab_re){
-            findInference(rs,re,w_tab_rs,w_tab_re,function(index,poids){
-                console.log("rs = re =  "+ rs[index]);
+            findInference(rs,re,w_tab_rs,w_tab_re,function(id_n3,poids){
+                console.log("rs = re =  "+ id_n3);
                 console.log("Poids relation = "+poids);
+                callback(null,id_n3,poids);
             });
 
 

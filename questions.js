@@ -57,8 +57,8 @@ exports.process = function(words,username,hashmap_mc)
 					"r_agent_1" : 24
 				};
 
-				tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
-					answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+				tools.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,id_n3){
+						answers.sendBackAnswerWithInference(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,id_n3);
 				});
 
 				/*
