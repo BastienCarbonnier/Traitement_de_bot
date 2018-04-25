@@ -404,7 +404,7 @@ function makeLiveInference (fw,sw,db_fw_id,db_sw_id,rel_id,callback){
     getRelationsSortantes(fw,6,function(err,rs,w_tab_rs){
 
         console.log("Je suis dans makeLiveInference() : ");
-        console.log(rs);
+        //console.log(rs);
         getRelationsEntrantes(sw,rel_id,function(err,re,w_tab_re){
             findInference(rs,re,w_tab_rs,w_tab_re,function(id_n3,poids){
                 console.log("rs = re =  "+ id_n3);
