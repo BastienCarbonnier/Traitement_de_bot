@@ -305,7 +305,7 @@ exports.sendBackAnswerWithInference = function(fw,sw,fw_id,sw_id,index_verbe,rel
                    verbe +
                    sa + " " + sw;
             if(n3 != null){
-                res+= " par déduction car "+fa+fw+" "+getVerbeAffIsaOrCaracAleatoire()+" "+n3;
+                res+= " par déduction car "+fa+fw+" "+getVerbeNegIsaOrCaracAleatoire()+" "+fa+" "+n3;
             }
         break;
         case 1:
@@ -329,7 +329,7 @@ exports.sendBackAnswerWithInference = function(fw,sw,fw_id,sw_id,index_verbe,rel
                    verbe +
                    sa + " " + sw;
             if(n3 != null){
-               res+= " par déduction car "+fa+fw+" "+getVerbeAffIsaOrCaracAleatoire()+" "+n3;
+               res+= " par déduction car "+fa+fw+" "+getVerbeAffIsaOrCaracAleatoire()+" "+fa+" "+n3;
             }
         break;
         default:

@@ -402,7 +402,14 @@ function getWordByID (data,w_id,callback){
     var res = data.match(regex);
     if (res != null){
         var tab_res = res[0].split(";");
-        callback(tab_res[2].substring(1,tab_res[2].length-1));
+        var ind_raf = tab_res[2].indexOf(">");
+        if (ind_raf!=-1){
+            callback(tab_res[2].substring(1,ind_raf));
+        }
+        else{
+            callback(tab_res[2].substring(1,tab_res[2].length-1));
+        }
+
     }
     else{
         callback(-1);
