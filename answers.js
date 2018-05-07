@@ -104,6 +104,25 @@ function getAdverbeAffDebutContractableAleatoire(){
     return listAdverbeAffDebut[numRandom];
 }
 
+function getAdverbeNegDebutAleatoire(){
+    var listAdverbeNegDebut = [
+        "En effet, ","Il se trouve que ","Non, ",""
+    ];
+
+    var numRandom = Math.floor(Math.random()*listAdverbeNegDebut.length);
+
+    return listAdverbeNegDebut[numRandom];
+}
+function getAdverbeNegDebutContractableAleatoire(){
+    var listAdverbeNegDebut = [
+        "En effet, ","Il se trouve qu'","Non, ",""
+    ];
+
+    var numRandom = Math.floor(Math.random()*listAdverbeNegDebut.length);
+
+    return listAdverbeNegDebut[numRandom];
+}
+
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -188,12 +207,7 @@ exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_t
 
     fa = (fa==-1 ? "" : lowerCaseFirstLetter(fa)+" ");
     sa = (sa==-1 ? "" : " "+lowerCaseFirstLetter(sa));
-    if (tools.isArticleContractable(fa)){
-        res += getAdverbeAffDebutContractableAleatoire();
-    }
-    else{
-        res += getAdverbeAffDebutAleatoire();
-    }
+
 
     switch (code) {
         case -1: //ne sait pas
@@ -202,6 +216,12 @@ exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_t
 
         case 0:
 
+        if (tools.isArticleContractable(fa)){
+            res += getAdverbeNegDebutContractableAleatoire();
+        }
+        else{
+            res += getAdverbeNegDebutAleatoire();
+        }
             if (rel === "r_carac"){
                 verbe = getVerbeNegIsaOrCaracAleatoire();
             }
@@ -222,6 +242,13 @@ exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_t
                    sa + " " + sw ;
         break;
         case 1:
+
+        if (tools.isArticleContractable(fa)){
+            res += getAdverbeAffDebutContractableAleatoire();
+        }
+        else{
+            res += getAdverbeAffDebutAleatoire();
+        }
 
             if (rel === "r_carac"){
                 verbe = getVerbeAffIsaOrCaracAleatoire();
@@ -305,7 +332,7 @@ exports.sendBackAnswerWithInference = function(fw,sw,fw_id,sw_id,index_verbe,rel
                    verbe +
                    sa + " " + sw;
             if(n3 != null){
-                res+= " par déduction car "+fa+fw+" "+getVerbeNegIsaOrCaracAleatoire()+" "+fa+" "+n3;
+                res+= " par déduction car "+fa+fw+" "+getVerbeNegIsaOrCaracAleatoire()+" "+fa+n3;
             }
         break;
         case 1:
@@ -329,7 +356,7 @@ exports.sendBackAnswerWithInference = function(fw,sw,fw_id,sw_id,index_verbe,rel
                    verbe +
                    sa + " " + sw;
             if(n3 != null){
-               res+= " par déduction car "+fa+fw+" "+getVerbeAffIsaOrCaracAleatoire()+" "+fa+" "+n3;
+               res+= " par déduction car "+fa+fw+" "+getVerbeAffIsaOrCaracAleatoire()+" "+fa+n3;
             }
         break;
         default:
