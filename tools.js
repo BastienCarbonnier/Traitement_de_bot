@@ -45,8 +45,8 @@ exports.isQuestion = function(words,callback){
         }
         else{
             var w2_tab = words[2].split(/\'/);
-
-            if (w2_tab.length>1&&isArticle(w2_tab[1])){
+            console.log(w2_tab);
+            if (w2_tab.length>1){
                 words.splice(0,2);
                 words[0] = w2_tab[1];
             }
@@ -223,12 +223,6 @@ exports.checkRelationFromRezoDump = function(fw,sw,rel,callback){
     };
     console.log("relation : "+rel);
     var rel_id = relations[rel];
-    //// TODO: Done !!
-    //// Recupérer les données de la page rezo_dump pour rel_id et first_word
-    //// Récupérer l'id du first word : e;eid;'vache';1;w
-    //// Voir si une relation existe : e;id_sw;secondWord;1;w
-    //// Checker la relation : r;r_id;db_fw_id;db_sw_id;rel_id;w
-    //// Check le poids et appeler callback
 
     makeGetRequestRezoDump(fw,rel_id,null,function(err, result){
         if (err) callback(-1);
@@ -239,6 +233,7 @@ exports.checkRelationFromRezoDump = function(fw,sw,rel,callback){
                         console.log("Pas de relations entrantes");
                         console.log("Lancement Inferences Live : ");
                         makeLiveInference(fw,sw,db_fw_id,db_sw_id,rel_id,function(err,id_n3,w_rel){
+                            console.log("\nid n3 = "+id_n3);
                             if (w_rel != null){
                                 console.log("\nPoids relation : "+w_rel);
                                 if (w_rel>0){
@@ -357,7 +352,7 @@ function getRelationsSortantes(fw,rel_id,callback){
                         w_tab[w_tab.length] = Number(tab_rs[5]);
                     }
                 }
-                callback(null,n3_tab,w_tab);
+                callback(null,n3_tab,w_tab,result);
             }
             else{
                 callback(-1);
@@ -399,21 +394,58 @@ function getRelationsEntrantes(sw,rel_id,callback){
 
     });
 }
+
+// e;150;'chat';1;5028
+
+function getWordByID (data,w_id,callback){
+    var regex = new RegExp("e;"+w_id+";'.*';\\d*;\\d*","g");
+    var res = data.match(regex);
+    if (res != null){
+        var tab_res = res[0].split(";");
+        callback(tab_res[2].substring(1,tab_res[2].length-1));
+    }
+    else{
+        callback(-1);
+    }
+
+}
+
 function makeLiveInference (fw,sw,db_fw_id,db_sw_id,rel_id,callback){
 
-    getRelationsSortantes(fw,6,function(err,rs,w_tab_rs){
+    getRelationsSortantes(fw,6,function(err,rs,w_tab_rs,rs_data){
 
         console.log("Je suis dans makeLiveInference() : ");
         //console.log(rs);
-        getRelationsEntrantes(sw,rel_id,function(err,re,w_tab_re){
-            findInference(rs,re,w_tab_rs,w_tab_re,function(id_n3,poids){
-                console.log("rs = re =  "+ id_n3);
-                console.log("Poids relation = "+poids);
-                callback(null,id_n3,poids);
+
+        if (rs!= undefined){
+            getRelationsEntrantes(sw,rel_id,function(err,re,w_tab_re){
+                if (re!=undefined){
+                    findInference(rs,re,w_tab_rs,w_tab_re,function(err,id_n3,poids){
+                        if (err){
+                            callback(false);
+                        }
+                        else {
+                            console.log("rs = re =  "+ id_n3);
+                            console.log("Poids relation = "+poids);
+                            getWordByID(rs_data,id_n3,function(w_n3){
+                                callback(true,w_n3,poids);
+                            });
+
+                        }
+
+                    });
+                }
+                else{
+                    callback(true);
+                }
+
+
+
             });
-
-
-        });
+        }
+        else{
+            callback(false);
+        }
 
 
     });
@@ -424,19 +456,45 @@ function makeLiveInference (fw,sw,db_fw_id,db_sw_id,rel_id,callback){
 function findInference (rs,re,w_tab_rs,w_tab_re,callback){
     var max_index_rs=-1;
     var max_poids_rs =-1;
+
+    var min_index_rs=-1;
+    var min_poids_rs=1;
+
     var i;
     for(i in rs){
         var index = re.indexOf(rs[i]);
         if (index != -1){
-            if(w_tab_rs[i]>max_poids_rs){
-                max_poids_rs = w_tab_rs[i];
-                max_index_rs = rs[i];
+            if (w_tab_rs[i]>0){
+                if(w_tab_rs[i]>max_poids_rs){
+                    max_poids_rs = w_tab_rs[i];
+                    max_index_rs = rs[i];
+                }
+            }
+            else{
+                if(w_tab_rs[i]<min_poids_rs){
+                    min_poids_rs = w_tab_rs[i];
+                    min_index_rs = rs[i];
+                }
             }
 
         }
     }
-    if(i==rs.length-1){
-        callback(max_index_rs,max_poids_rs);
+    if(i!=rs.length-1){
+        callback(true);
+    }
+    else {
+        if (max_index_rs ==-1 && min_index_rs==-1){
+            callback(true);
+        }
+        else{
+            if (Math.abs(max_poids_rs)>Math.abs(min_poids_rs)){
+                callback(false,max_index_rs,max_poids_rs);
+            }
+            else{
+                callback(false,min_index_rs,min_poids_rs);
+            }
+
+        }
     }
 
 }
