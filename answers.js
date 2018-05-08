@@ -366,6 +366,24 @@ exports.sendBackAnswerWithInference = function(fw,sw,fw_id,sw_id,index_verbe,rel
     }
     var message = capitalizeFirstLetter(res) + ".";
     logMessageSended (false, message);
+
+    /*
+    tools.isVerbe(sw,function(err,rep){
+        if (!err){
+            if (rep){
+                bot.sendMessage("Le sw est un verbe.");
+            }
+            else{
+                bot.sendMessage("Le sw n'est pas un verbe.");
+            }
+
+        }
+        else{
+            bot.sendMessage("erreur lors de l'execution isVerbe");
+        }
+
+    });
+    */
     bot.sendMessage(message);
 
 };

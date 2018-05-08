@@ -1,28 +1,29 @@
 /*jshint esversion: 6 */
 
 var answers = require('./answers.js'),
-	tools 	= require('./tools.js'),
-	fs 			= require("fs"),
-	request    = require('./../request.js');
+tools 	= require('./tools.js'),
+fs 			= require("fs"),
+request    = require('./../request.js'),
+rezo_request= require("./rezo_request.js");
 
 /**
- * Split the message into a table
- * @param  {string} message
- * @return {string:table}
- */
+* Split the message into a table
+* @param  {string} message
+* @return {string:table}
+*/
 
 
 
 /**
- * Process the message by doing the following task :
- * - Parse the message
- * - Find relation
- * - Check for composed words
- * - Check relation from RezoDump
- * - Send back the answer to the user
- * @param  {string} message    Message sent by the user
- * @param  {Map} 	hashmap_mc hashmap containing a lot of potential compound words
- */
+* Process the message by doing the following task :
+* - Parse the message
+* - Find relation
+* - Check for composed words
+* - Check relation from RezoDump
+* - Send back the answer to the user
+* @param  {string} message    Message sent by the user
+* @param  {Map} 	hashmap_mc hashmap containing a lot of potential compound words
+*/
 exports.process = function(words,username,hashmap_mc)
 {
 
@@ -57,41 +58,41 @@ exports.process = function(words,username,hashmap_mc)
 					"r_agent_1" : 24
 				};
 
-				tools.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,id_n3){
-						answers.sendBackAnswerWithInference(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,id_n3);
+				rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,id_n3){
+					answers.sendBackAnswerWithInference(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,id_n3);
 				});
 
 				/*
 				request.isRelationInBDD(fw,sw,relations(rel),function(err,res){
-					if (err){
-						tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
-							answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
-						});
-					}
-					else{
-						if(res){
-							answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab);
-						}
-						else{
-							tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
-								answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
-							});
-						}
-					}
-				});
-				*/
-
-
-
+				if (err){
+				tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
+				answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
 			});
 		}
-	});
+		else{
+		if(res){
+		answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab);
+	}
+	else{
+	tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
+	answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+});
+}
+}
+});
+*/
+
+
+
+});
+}
+});
 };
 /**
- * Find relation by checking the verb in the words table
- * @param  {string:table}   words
- * @param  {Function} callback Callback of the function
- */
+* Find relation by checking the verb in the words table
+* @param  {string:table}   words
+* @param  {Function} callback Callback of the function
+*/
 function findRelation(words,callback){
 
 	var rel = "";
@@ -99,19 +100,19 @@ function findRelation(words,callback){
 	var offset_fw = -1;
 	var offset_sw = 1;
 	console.log("*** Dans findRelation() : \n");
-	for (var i in words){
+	var i;
+	for (i in words){
 		i = Number(i);
 		var w = words[i];
 
-
-		if (i+1 < words.length && isVerbeIsa(w) && tools.isArticle(words[i+1])){
+		if (i+1 < words.length && tools.isVerbeIsa(w) && tools.isArticle(words[i+1])){
 			index_verbe = i;
 			offset_fw += 0;
 			offset_sw += 1;
 			rel = "r_isa";
 			break;
 		}
-		else if (isVerbeCarac(w)){
+		else if (tools.isVerbeCarac(w)){
 
 			index_verbe = i;
 			offset_fw += 0;
@@ -119,7 +120,7 @@ function findRelation(words,callback){
 			rel = "r_carac";
 			break;
 		}
-		else if (isVerbeHasPart(w)){
+		else if (tools.isVerbeHasPart(w)){
 			if (i+1 < words.length && tools.isArticle(words[i+1])){
 				index_verbe = i;
 				offset_fw += 0;
@@ -133,8 +134,7 @@ function findRelation(words,callback){
 			rel = "r_has_part";
 			break;
 		}
-		else if (isVerbeAgent_1(w)){
-			var secondPart = getYword(i+1,words);
+		else if (tools.isVerbeAgent_1(w)){
 			if(i+1 < words.length && (words[i+1]=== "être"||words[i+1]=== "etre")){
 
 				if(i+2 < words.length && tools.isArticle(words[i+2])){
@@ -166,21 +166,28 @@ function findRelation(words,callback){
 				rel = "r_has_part";
 				break;
 			}
-			else if (isVerbe(secondPart)){
-				var secondPartLength = words.length-i;
-				words.splice(i+1,secondPartLength);
-				words[i+1] = secondPart;
+			else{
 				index_verbe = i;
-				rel = "r_agent_1";
-				console.log(words);
+				break;
 			}
 
 		}
 	}
 
-
-	if (index_verbe != -1){
-		callback(index_verbe,words,offset_fw,offset_sw,rel);
+	var secondPart = getYword(i+1,words);
+	if (index_verbe!=-1){
+		tools.isVerbe(secondPart,function(err,sp_is_verbe){
+			if (sp_is_verbe){
+				var secondPartLength = words.length-i;
+				words.splice(i+1,secondPartLength);
+				words[i+1] = secondPart;
+				index_verbe = i;
+				rel = "r_agent_1";
+			}
+			if (index_verbe != -1){
+				callback(index_verbe,words,offset_fw,offset_sw,rel);
+			}
+		});
 	}
 	else{
 		callback(-1,words,rel);
@@ -193,34 +200,4 @@ function getYword (index,words){
 	}
 	y+= words[words.length-1];
 	return y;
-}
-function isVerbe(word){
-	return true;
-}
-function isVerbeIsa(word){
-    var tabVerbeIsa = [
-        "est","sont","est-il","est-elle","sont-elles","sont-ils"
-    ];
-    return (tabVerbeIsa.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
-}
-
-function isVerbeCarac (word){
-    var tabVerbeCarac = [
-        "est","sont","est-il","est-elle","sont-elles","sont-ils"
-    ];
-    return (tabVerbeCarac.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
-}
-
-function isVerbeHasPart(word){
-    var tabVerbeHasPart = [
-        "a","a-t-il","a-t-elle","possède-t-il","possède-t-elle"
-    ];
-    return (tabVerbeHasPart.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
-}
-
-function isVerbeAgent_1(word){
-	var tabVerbeAgent_1 = [
-        "peut","peut-il","peut-elle","peuvent-ils","peuvent-elles"
-    ];
-    return (tabVerbeAgent_1.indexOf(word.toLowerCase())!=-1);
 }
