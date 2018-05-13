@@ -24,7 +24,7 @@ rezo_request= require("./rezo_request.js");
 * @param  {string} message    Message sent by the user
 * @param  {Map} 	hashmap_mc hashmap containing a lot of potential compound words
 */
-exports.process = function(words,username,hashmap_mc)
+function process(words,pseudo,hashmap_mc)
 {
 
 	var rel = "";
@@ -35,7 +35,7 @@ exports.process = function(words,username,hashmap_mc)
 			console.log(words);
 			console.log(rel);
 			console.log(index_verbe);
-			answers.sendBackAnswerError("Je n'ai pas réussi à détecter le verbe présent dans la phrase...");
+			answers.sendBackAnswerError(pseudo,"Je n'ai pas réussi à détecter le verbe présent dans la phrase...");
 		}
 		else{
 			tools.checkComposedWord (words,index_verbe,hashmap_mc,function(words_tab,new_index_verbe){
@@ -59,7 +59,7 @@ exports.process = function(words,username,hashmap_mc)
 				};
 
 				rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,id_n3){
-					answers.sendBackAnswerWithInference(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,id_n3);
+					answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,id_n3);
 				});
 
 				/*
@@ -87,7 +87,7 @@ exports.process = function(words,username,hashmap_mc)
 });
 }
 });
-};
+}
 /**
 * Find relation by checking the verb in the words table
 * @param  {string:table}   words
@@ -105,14 +105,14 @@ function findRelation(words,callback){
 		i = Number(i);
 		var w = words[i];
 
-		if (i+1 < words.length && tools.isVerbeIsa(w) && tools.isArticle(words[i+1])){
+		if (i+1 < words.length && tools.isVerbeIsaQuestion(w) && tools.isArticle(words[i+1])){
 			index_verbe = i;
 			offset_fw += 0;
 			offset_sw += 1;
 			rel = "r_isa";
 			break;
 		}
-		else if (tools.isVerbeCarac(w)){
+		else if (tools.isVerbeCaracQuestion(w)){
 
 			index_verbe = i;
 			offset_fw += 0;
@@ -120,7 +120,7 @@ function findRelation(words,callback){
 			rel = "r_carac";
 			break;
 		}
-		else if (tools.isVerbeHasPart(w)){
+		else if (tools.isVerbeHasPartQuestion(w)){
 			if (i+1 < words.length && tools.isArticle(words[i+1])){
 				index_verbe = i;
 				offset_fw += 0;
@@ -134,7 +134,7 @@ function findRelation(words,callback){
 			rel = "r_has_part";
 			break;
 		}
-		else if (tools.isVerbeAgent_1(w)){
+		else if (tools.isVerbeAgent_1Question(w)){
 			if(i+1 < words.length && (words[i+1]=== "être"||words[i+1]=== "etre")){
 
 				if(i+2 < words.length && tools.isArticle(words[i+2])){
@@ -201,3 +201,5 @@ function getYword (index,words){
 	y+= words[words.length-1];
 	return y;
 }
+
+module.exports.process = process;

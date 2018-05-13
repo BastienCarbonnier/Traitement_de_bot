@@ -192,101 +192,14 @@ function getPhraseErreurInconnu(){
     return listPhraseErreur[numRandom];
 }
 
-exports.sendBackAnswer = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab){
+exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3){
     var res = "";
     var verbe = "";
 
     if (fw === -1 || sw === -1){
         var reponse = getPhraseErreurComique();
         logMessageSended(true, reponse);
-        bot.sendMessage(reponse);
-        return;
-    }
-    var fa = getArticleBeforeFirstWord(fw_id,words_tab); // first article
-    var sa = getArticleBeforeSecondWord(sw_id,index_verbe,words_tab); // second article
-
-    fa = (fa==-1 ? "" : lowerCaseFirstLetter(fa)+" ");
-    sa = (sa==-1 ? "" : " "+lowerCaseFirstLetter(sa));
-
-
-    switch (code) {
-        case -1: //ne sait pas
-            res = getPhraseErreurInconnu();
-        break;
-
-        case 0:
-
-        if (tools.isArticleContractable(fa)){
-            res += getAdverbeNegDebutContractableAleatoire();
-        }
-        else{
-            res += getAdverbeNegDebutAleatoire();
-        }
-            if (rel === "r_carac"){
-                verbe = getVerbeNegIsaOrCaracAleatoire();
-            }
-            else if (rel === "r_isa"){
-                verbe = getVerbeNegIsaOrCaracAleatoire();
-            }
-            else if (rel === "r_has_part") {
-                verbe = getVerbeNegHasPartAleatoire();
-            }
-            else if (rel === "r_agent_1") {
-                verbe = getVerbeNegAgent_1Aleatoire();
-            }
-            else {
-                return "La réponse pour cette relation n'a pas été implémenté.";
-            }
-            res += fa +fw+ " " +
-                   verbe +
-                   sa + " " + sw ;
-        break;
-        case 1:
-
-        if (tools.isArticleContractable(fa)){
-            res += getAdverbeAffDebutContractableAleatoire();
-        }
-        else{
-            res += getAdverbeAffDebutAleatoire();
-        }
-
-            if (rel === "r_carac"){
-                verbe = getVerbeAffIsaOrCaracAleatoire();
-            }
-            else if (rel === "r_isa"){
-                verbe = getVerbeAffIsaOrCaracAleatoire();
-            }
-            else if (rel === "r_has_part") {
-                verbe = getVerbeAffHasPartAleatoire();
-            }
-            else if (rel === "r_agent_1") {
-                verbe = getVerbeAffAgent_1Aleatoire();
-            }
-            else {
-                res += "La réponse pour cette relation n'a pas été implémenté.";
-            }
-            res += fa +fw+ " " +
-                   verbe +
-                   sa + " " + sw ;
-        break;
-        default:
-            res = getPhraseErreurInconnu();
-
-
-    }
-    var message = capitalizeFirstLetter(res) + ".";
-    logMessageSended (false, message);
-    bot.sendMessage(message);
-
-};
-exports.sendBackAnswerWithInference = function(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3){
-    var res = "";
-    var verbe = "";
-
-    if (fw === -1 || sw === -1){
-        var reponse = getPhraseErreurComique();
-        logMessageSended(true, reponse);
-        bot.sendMessage(reponse);
+        bot.sendMessage(reponse,pseudo);
         return;
     }
     var fa = getArticleBeforeFirstWord(fw_id,words_tab); // first article
@@ -384,24 +297,24 @@ exports.sendBackAnswerWithInference = function(fw,sw,fw_id,sw_id,index_verbe,rel
 
     });
     */
-    bot.sendMessage(message);
+    bot.sendMessage(message,pseudo);
 
 };
 
-exports.sendBackAnswerAffirmation = function (fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab){
+exports.sendBackAnswerAffirmation = function (pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab){
     var mes = "Très bien ! Je retiens les informations suivantes";
-    bot.sendMessage(mes);
+    bot.sendMessage(mes,pseudo);
     mes = "Premier mot : "+ fw + "  Deuxième mot : "+sw+"\n";
-    bot.sendMessage(mes);
+    bot.sendMessage(mes,pseudo);
     mes = "Relation : "+rel+"\n";
-    bot.sendMessage(mes);
+    bot.sendMessage(mes,pseudo);
 
     var log = fw+"  "+rel+"  "+sw;
-    logMessageSended (false, log);
+    logMessageSended(false, log);
 };
 
-exports.sendBackAnswerError = function(error_message){
-    bot.sendMessage(error_message);
+exports.sendBackAnswerError = function(pseudo,error_message){
+    bot.sendMessage(error_message,pseudo);
 };
 
 function logMessageSended (err, message){

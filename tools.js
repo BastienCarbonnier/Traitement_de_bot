@@ -28,39 +28,34 @@ function isArticleContractable(art){
 }
 
 
-function isVerbeIsa (word){
+function isVerbeIsaQuestion (word){
     var tabVerbeIsa = [
         "est-il","est-elle","sont-elles","sont-ils"
     ];
     return (tabVerbeIsa.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }
 
-function isVerbeCarac(word){
+function isVerbeCaracQuestion(word){
     var tabVerbeCarac = [
         "est-il","est-elle","sont-elles","sont-ils"
     ];
     return (tabVerbeCarac.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }
 
-function isVerbeHasPart(word){
+function isVerbeHasPartQuestion(word){
     var tabVerbeHasPart = [
         "a-t-il","a-t-elle","possède-t-il","possède-t-elle"
     ];
     return (tabVerbeHasPart.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }
 
-function isVerbeAgent_1(word){
+function isVerbeAgent_1Question(word){
     var tabVerbeAgent_1 = [
         "peut","peut-il","peut-elle","peuvent-ils","peuvent-elles"
     ];
     return (tabVerbeAgent_1.indexOf(word.toLowerCase())!=-1);
 }
-function isVerbeCanEat(word){
-    var tabVerbeCanEat = [
-        "manger","avaler","dévorer"
-    ];
-    return (tabVerbeCanEat.indexOf(word.toLowerCase())!=-1);
-}
+
 
 function isAdjectif(word){
     var tabAdjectifs = [
@@ -139,7 +134,7 @@ function isQuestion (words,callback){
     }
     else{
         for (var i in words){
-            if (isVerbeIsa(words[i])||isVerbeCarac(words[i])||isVerbeHasPart(words[i])||isVerbeAgent_1(words[i])){
+            if (isVerbeIsaQuestion(words[i])||isVerbeCaracQuestion(words[i])||isVerbeHasPartQuestion(words[i])||isVerbeAgent_1Question(words[i])){
                 callback(true,words);
                 return;
             }
@@ -226,11 +221,10 @@ function isVerbe(word,callback){
     });
 }
 
-module.exports.isVerbeIsa = isVerbeIsa;
-module.exports.isVerbeCarac = isVerbeCarac;
-module.exports.isVerbeHasPart = isVerbeHasPart;
-module.exports.isVerbeAgent_1 = isVerbeAgent_1;
-module.exports.isVerbeCanEat = isVerbeCanEat;
+module.exports.isVerbeIsaQuestion = isVerbeIsaQuestion;
+module.exports.isVerbeCaracQuestion = isVerbeCaracQuestion;
+module.exports.isVerbeHasPartQuestion = isVerbeHasPartQuestion;
+module.exports.isVerbeAgent_1Question = isVerbeAgent_1Question;
 
 module.exports.isArticle = isArticle;
 module.exports.isArticleContractable = isArticleContractable;

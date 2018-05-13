@@ -7,10 +7,14 @@ var tools = require('./tools.js'),
 
 
 
-exports.process = function(words,username,hashmap_mc)
+function process(words,username,hashmap_mc)
 {
-
-	var rel = "";
+    var relations = {
+        "r_isa" : 6,
+        "r_has_part" : 9,
+        "r_carac" : 17,
+        "r_agent_1" : 24
+    };
 
 	if (words[words.length-1]=== ".")
 		words.splice(words.length-1);
@@ -21,7 +25,7 @@ exports.process = function(words,username,hashmap_mc)
 
 			console.log("relation verbe : "+rel+" \n");
 			console.log(words);
-			answers.sendBackAnswerError("Je n'ai pas réussi à détecter le verbe présent dans la phrase...");
+			answers.sendBackAnswerError(pseudo,"Je n'ai pas réussi à détecter le verbe présent dans la phrase...");
 		}
 		else{
 			tools.checkComposedWord (words,index_verbe,hashmap_mc,function(words_tab,new_index_verbe){
@@ -31,11 +35,11 @@ exports.process = function(words,username,hashmap_mc)
 				var sw = words_tab[sw_id];
                 var code = 0;
 
-                answers.sendBackAnswerAffirmation(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
-                /*
-                request.insertRelation(fw_id,sw_id,rel_id,username,function(){
-                    answers.sendBackAnswerAffirmation(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
-                });*/
+
+
+                request.insertRelation(fw,sw,relations[rel],username,function(){
+                    answers.sendBackAnswerAffirmation(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+                });
 
 
                 /*
@@ -45,7 +49,7 @@ exports.process = function(words,username,hashmap_mc)
 			});
 		}
 	});
-};
+}
 
 function findRelation(words,callback){
 
@@ -181,3 +185,5 @@ function isVerbeAgent_1(word){
     ];
     return (tabVerbeAgent_1.indexOf(word.toLowerCase())!=-1);
 }
+
+module.exports.process = process;
