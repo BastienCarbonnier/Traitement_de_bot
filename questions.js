@@ -64,29 +64,30 @@ function process(words,pseudo,hashmap_mc)
 
 				/*
 				request.isRelationInBDD(fw,sw,relations(rel),function(err,res){
-				if (err){
-				tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
-				answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+					if (err){
+						rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,id_n3){
+							answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,id_n3);
+						});
+					}
+					else{
+						if(res){
+							answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab);
+						}
+						else{
+							tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
+								answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+							});
+						}
+					}
+				});
+				*/
+
+
+
+
 			});
 		}
-		else{
-		if(res){
-		answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab);
-	}
-	else{
-	tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
-	answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
-});
-}
-}
-});
-*/
-
-
-
-});
-}
-});
+	});
 }
 /**
 * Find relation by checking the verb in the words table
