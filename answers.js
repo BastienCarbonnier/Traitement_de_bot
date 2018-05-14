@@ -303,10 +303,10 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
             if(is_debug){
                 mes += "\nVoici les informations que j'ai compris :";
                 mes += "Premier mot : "+ fw + "  Deuxième mot : "+sw+"\n";
-                mes += "Relation : "+rel+"\n";
+                mes += "Relation : "+rel;
 
                 if (n3 != null){
-                    mes += "Relation inférée : "+n3;
+                    mes += "\nRelation inférée : "+n3;
                 }
             }
             bot.sendMessage(mes,pseudo);
@@ -322,10 +322,10 @@ exports.sendBackAnswerAffirmation = function (pseudo,fw,sw,fw_id,sw_id,index_ver
             if(is_debug){
                 mes += "\nVoici les informations que j'ai compris :";
                 mes += "Premier mot : "+ fw + "  Deuxième mot : "+sw+"\n";
-                mes += "Relation : "+rel+"\n";
-                
+                mes += "Relation : "+rel;
+
                 if (n3 != null){
-                    mes += "Relation inférée : "+n3;
+                    mes += "\nRelation inférée : "+n3;
                 }
             }
             bot.sendMessage(mes,pseudo);
