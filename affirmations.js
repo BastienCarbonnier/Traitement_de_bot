@@ -7,7 +7,7 @@ var tools = require('./tools.js'),
 
 
 
-function process(words,username,hashmap_mc)
+function process(words,pseudo,hashmap_mc)
 {
     var relations = {
         "r_isa" : 6,
@@ -37,7 +37,7 @@ function process(words,username,hashmap_mc)
 
 
 
-                request.insertRelation(fw,sw,relations[rel],username,function(){
+                request.insertRelation(fw,sw,relations[rel],pseudo,10,function(){
                     answers.sendBackAnswerAffirmation(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
                 });
 

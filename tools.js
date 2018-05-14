@@ -51,7 +51,7 @@ function isVerbeHasPartQuestion(word){
 
 function isVerbeAgent_1Question(word){
     var tabVerbeAgent_1 = [
-        "peut","peut-il","peut-elle","peuvent-ils","peuvent-elles"
+        "peut-il","peut-elle","peuvent-ils","peuvent-elles"
     ];
     return (tabVerbeAgent_1.indexOf(word.toLowerCase())!=-1);
 }

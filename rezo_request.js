@@ -138,15 +138,13 @@ var rp          = require('request-promise'),
             if (rs!= undefined){
                 getRelationsEntrantes(sw,rel_id,function(err,re,w_tab_re){
                     if (re!=undefined){
-                        findInference(rs,re,w_tab_rs,w_tab_re,function(err,id_n3,poids){
+                        findInference(rs,re,w_tab_rs,w_tab_re,function(err,id_n3,rs_positive,re_positive){
                             if (err){
                                 callback(false);
                             }
                             else {
-                                console.log("rs = re =  "+ id_n3);
-                                console.log("Poids relation = "+poids);
-                                getWordByID(rs_data,id_n3,function(w_n3){
-                                    callback(true,w_n3,poids);
+                                getWordByID(rs_data,id_n3,function(word_n3){
+                                    callback(true,word_n3,rs_positive,re_positive);
                                 });
 
                             }
@@ -178,25 +176,54 @@ var rp          = require('request-promise'),
         var min_index_rs=-1;
         var min_poids_rs=1;
 
+        var re_positive = true;
+        var rs_positive = true;
+
         var i;
         for(i in rs){
             var index = re.indexOf(rs[i]);
             if (index != -1){
                 if (w_tab_rs[i]>0){
                     if(w_tab_rs[i]>max_poids_rs){
+                        if(w_tab_re[index]>0){
+                            re_positive = true;
+                        }
+                        else{
+                            re_positive = false;
+                        }
                         max_poids_rs = w_tab_rs[i];
                         max_index_rs = rs[i];
+                        rs_positive = true;
                     }
                 }
                 else{
                     if(w_tab_rs[i]<min_poids_rs){
+                        if(w_tab_re[index]>0){
+                            re_positive = true;
+                        }
+                        else{
+                            re_positive = false;
+                        }
                         min_poids_rs = w_tab_rs[i];
                         min_index_rs = rs[i];
+                        rs_positive = false;
                     }
                 }
 
             }
         }
+
+        console.log("*** Dans findInference() ***");
+
+        console.log("max_index_rs = "+max_index_rs);
+        console.log("max_poids_rs = "+max_poids_rs);
+
+        console.log("min_index_rs = "+min_index_rs);
+        console.log("min_poids_rs = "+min_poids_rs);
+
+        console.log(" re_positive = "+re_positive);
+        console.log(" rs_positive = "+rs_positive);
+
         if(i!=rs.length-1){
             callback(true);
         }
@@ -206,10 +233,11 @@ var rp          = require('request-promise'),
             }
             else{
                 if (Math.abs(max_poids_rs)>Math.abs(min_poids_rs)){
-                    callback(false,max_index_rs,max_poids_rs);
+                    callback(false,max_index_rs,rs_positive,re_positive);
                 }
                 else{
-                    callback(false,min_index_rs,min_poids_rs);
+                    callback(false,min_index_rs,rs_positive,re_positive);
+
                 }
 
             }
@@ -302,16 +330,9 @@ var rp          = require('request-promise'),
                         if (db_sw_id == -1){
                             console.log("Pas de relations entrantes");
                             console.log("Lancement Inferences Live : ");
-                            makeLiveInference(fw,sw,db_fw_id,db_sw_id,rel_id,function(err,id_n3,w_rel){
-                                console.log("\nid n3 = "+id_n3);
-                                if (w_rel != null){
-                                    console.log("\nPoids relation : "+w_rel);
-                                    if (w_rel>0){
-                                        callback(1,true,id_n3);
-                                    }
-                                    else{
-                                        callback(0,true,id_n3);
-                                    }
+                            makeLiveInference(fw,sw,db_fw_id,db_sw_id,rel_id,function(err,id_n3,rs_positive,re_positive){
+                                if (rs_positive != null && re_positive != null){
+                                    callback(-1,true,id_n3,rs_positive,re_positive);
                                 }
                                 else {
                                     console.log("Poids inconnu !");

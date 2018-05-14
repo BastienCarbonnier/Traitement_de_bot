@@ -3,7 +3,8 @@ var http        = require('http'),
     tools       = require('./tools.js'),
     bot         = require('../server.js'),
     windows1252 = require('windows-1252'),
-    fs          = require('fs');
+    fs          = require('fs'),
+    request     = require('../request.js');
 
 
 function getAdverbeAffAleatoire(){
@@ -192,10 +193,10 @@ function getPhraseErreurInconnu(){
     return listPhraseErreur[numRandom];
 }
 
-exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3){
+exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive){
     var res = "";
     var verbe = "";
-
+    var debug = "";
     if (fw === -1 || sw === -1){
         var reponse = getPhraseErreurComique();
         logMessageSended(true, reponse);
@@ -208,16 +209,22 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
     fa = (fa==-1 ? "" : lowerCaseFirstLetter(fa)+" ");
     sa = (sa==-1 ? "" : " "+lowerCaseFirstLetter(sa));
 
+    var fin_deduction = "";
 
-    if (tools.isArticleContractable(fa)){
-        advDebut = getAdverbeAffDebutContractableAleatoire();
-        res += getAdverbeAffDebutContractableAleatoire();
+    if (n3 != null){
+        if (rs_positive){
+            fin_deduction = " car "+fa+fw+" "+getVerbeAffIsaOrCaracAleatoire()+" "+fa+n3;
+        }
+        else{
+            fin_deduction = " car "+fa+fw+" "+getVerbeNegIsaOrCaracAleatoire()+" "+fa+n3;
+        }
+        if(re_positive && rs_positive){
+            code = 1;
+        }
+        else{
+            code = 0;
+        }
     }
-    else{
-        advDebut = getAdverbeAffDebutContractableAleatoire();
-        res += getAdverbeAffDebutAleatoire();
-    }
-
 
     switch (code) {
         case -1: //ne sait pas
@@ -225,7 +232,12 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
         break;
 
         case 0:
-
+            if (tools.isArticleContractable(fa)){
+                res += getAdverbeNegDebutContractableAleatoire();
+            }
+            else{
+                res += getAdverbeNegDebutAleatoire();
+            }
             if (rel === "r_carac"){
                 verbe = getVerbeNegIsaOrCaracAleatoire();
             }
@@ -245,11 +257,16 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
                    verbe +
                    sa + " " + sw;
             if(n3 != null){
-                res+= " par déduction car "+fa+fw+" "+getVerbeNegIsaOrCaracAleatoire()+" "+fa+n3;
+                res+= fin_deduction;
             }
         break;
         case 1:
-
+            if (tools.isArticleContractable(fa)){
+                res += getAdverbeAffDebutContractableAleatoire();
+            }
+            else{
+                res += getAdverbeAffDebutAleatoire();
+            }
             if (rel === "r_carac"){
                 verbe = getVerbeAffIsaOrCaracAleatoire();
             }
@@ -269,7 +286,7 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
                    verbe +
                    sa + " " + sw;
             if(n3 != null){
-               res+= " par déduction car "+fa+fw+" "+getVerbeAffIsaOrCaracAleatoire()+" "+fa+n3;
+               res+= fin_deduction;
             }
         break;
         default:
@@ -277,38 +294,43 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
 
 
     }
-    var message = capitalizeFirstLetter(res) + ".";
-    logMessageSended (false, message);
+    var mes = capitalizeFirstLetter(res) + ".";
+    logMessageSended (false, mes);
 
-    /*
-    tools.isVerbe(sw,function(err,rep){
+
+    request.isInDebugMode(pseudo,function(err,is_debug){
         if (!err){
-            if (rep){
-                bot.sendMessage("Le sw est un verbe.");
-            }
-            else{
-                bot.sendMessage("Le sw n'est pas un verbe.");
-            }
+            if(is_debug){
+                mes += "\nVoici les informations que j'ai compris :";
+                mes += "Premier mot : "+ fw + "  Deuxième mot : "+sw+"\n";
+                mes += "Relation : "+rel+"\n";
 
+                if (n3 != null){
+                    mes += "Relation inférée : "+n3;
+                }
+            }
+            bot.sendMessage(mes,pseudo);
         }
-        else{
-            bot.sendMessage("erreur lors de l'execution isVerbe");
-        }
-
     });
-    */
-    bot.sendMessage(message,pseudo);
-
 };
 
 exports.sendBackAnswerAffirmation = function (pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab){
-    var mes = "Très bien ! Je retiens les informations suivantes";
-    bot.sendMessage(mes,pseudo);
-    mes = "Premier mot : "+ fw + "  Deuxième mot : "+sw+"\n";
-    bot.sendMessage(mes,pseudo);
-    mes = "Relation : "+rel+"\n";
-    bot.sendMessage(mes,pseudo);
 
+    var mes = "Très bien ! Merci pour votre participation !";
+    request.isInDebugMode(pseudo,function(err,is_debug){
+        if (!err){
+            if(is_debug){
+                mes += "\nVoici les informations que j'ai compris :";
+                mes += "Premier mot : "+ fw + "  Deuxième mot : "+sw+"\n";
+                mes += "Relation : "+rel+"\n";
+                
+                if (n3 != null){
+                    mes += "Relation inférée : "+n3;
+                }
+            }
+            bot.sendMessage(mes,pseudo);
+        }
+    });
     var log = fw+"  "+rel+"  "+sw;
     logMessageSended(false, log);
 };

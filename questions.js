@@ -58,8 +58,8 @@ function process(words,pseudo,hashmap_mc)
 					"r_agent_1" : 24
 				};
 
-				rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,id_n3){
-					answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,id_n3);
+				rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
+					answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive);
 				});
 
 				/*
