@@ -28,9 +28,14 @@ function process(words,pseudo,hashmap_mc)
 			answers.sendBackAnswerError(pseudo,"Je n'ai pas réussi à détecter le verbe présent dans la phrase...");
 		}
 		else{
-			tools.checkComposedWord (words,index_verbe,hashmap_mc,function(words_tab,new_index_verbe){
+            var is_r_isa = (rel=="r_isa");
+			tools.checkComposedWord (words,index_verbe,hashmap_mc,is_r_isa,function(words_tab,new_index_verbe){
 				var fw_id = new_index_verbe+offset_fw;
 				var sw_id = new_index_verbe+offset_sw;
+
+                console.log("fw_id = "+fw_id);
+                console.log("sw_id = "+sw_id);
+                console.log(words_tab);
 				var fw = words_tab[fw_id];
 				var sw = words_tab[sw_id];
                 var code = 0;
@@ -58,19 +63,21 @@ function findRelation(words,callback){
 	var offset_fw = -1;
 	var offset_sw = 1;
 	console.log("*** Dans findRelation() : \n");
+    console.log(words);
+
 	for (var i in words){
 		i = Number(i);
 		var w = words[i];
 
 
-		if (i+1 < words.length && isVerbeIsa(w) && tools.isArticle(words[i+1])){
+		if (i+1 < words.length && isVerbeIsaAff(w) && tools.isArticle(words[i+1])){
 			index_verbe = i;
 			offset_fw += 0;
 			offset_sw += 1;
 			rel = "r_isa";
 			break;
 		}
-		else if (isVerbeCarac(w)){
+		else if (isVerbeCaracAff(w)){
 
 			index_verbe = i;
 			offset_fw += 0;
@@ -78,7 +85,7 @@ function findRelation(words,callback){
 			rel = "r_carac";
 			break;
 		}
-		else if (isVerbeHasPart(w)){
+		else if (isVerbeHasPartAff(w)){
 			if (i+1 < words.length && tools.isArticle(words[i+1])){
 				index_verbe = i;
 				offset_fw += 0;
@@ -92,8 +99,7 @@ function findRelation(words,callback){
 			rel = "r_has_part";
 			break;
 		}
-		else if (isVerbeAgent_1(w)){
-            var secondPart = getYword(i+1,words);
+		else if (isVerbeAgent_1Aff(w)){
 			if(i+1 < words.length && (words[i+1]=== "être"||words[i+1]=== "etre")){
 
 				if(i+2 < words.length && tools.isArticle(words[i+2])){
@@ -125,29 +131,37 @@ function findRelation(words,callback){
 				rel = "r_has_part";
 				break;
 			}
-            else if (isVerbe(secondPart)){
+            else{
+				index_verbe = i;
+				break;
+			}
+
+	    }
+    }
+
+    console.log("index verbe = "+index_verbe);
+    console.log("fw_offset = "+offset_fw);
+    console.log("sw_offset = "+offset_sw);
+
+    var secondPart = getYword(i+1,words);
+	if (index_verbe!=-1){
+		tools.isVerbe(secondPart,function(err,sp_is_verbe){
+			if (sp_is_verbe){
 				var secondPartLength = words.length-i;
 				words.splice(i+1,secondPartLength);
 				words[i+1] = secondPart;
 				index_verbe = i;
 				rel = "r_agent_1";
-				console.log(words);
 			}
-
-		}
-	}
-
-
-	if (index_verbe != -1){
-		callback(index_verbe,words,offset_fw,offset_sw,rel);
+			if (index_verbe != -1){
+				callback(index_verbe,words,offset_fw,offset_sw,rel);
+			}
+		});
 	}
 	else{
-		callback(-1);
+		callback(-1,words,rel);
 	}
 
-}
-function isVerbe(word){
-	return true;
 }
 
 function getYword (index,words){
@@ -159,27 +173,27 @@ function getYword (index,words){
 	return y;
 }
 
-function isVerbeIsa(word){
+function isVerbeIsaAff(word){
     var tabVerbeIsa = [
         "est","peut-être","peut-etre"
     ];
     return (tabVerbeIsa.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }
 
-function isVerbeCarac (word){
+function isVerbeCaracAff(word){
     var tabVerbeCarac = [
         "est","peut-être","peut-etre"
     ];
     return (tabVerbeCarac.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }
 
-function isVerbeHasPart(word){
+function isVerbeHasPartAff(word){
     var tabVerbeHasPart = [
         "a","possède","peut-avoir"
     ];
     return (tabVerbeHasPart.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }
-function isVerbeAgent_1(word){
+function isVerbeAgent_1Aff(word){
 	var tabVerbeAgent_1 = [
         "peut"
     ];

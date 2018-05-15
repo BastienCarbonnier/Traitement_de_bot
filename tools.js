@@ -51,7 +51,7 @@ function isVerbeHasPartQuestion(word){
 
 function isVerbeAgent_1Question(word){
     var tabVerbeAgent_1 = [
-        "peut-il","peut-elle","peuvent-ils","peuvent-elles"
+        "peut","peut-il","peut-elle","peuvent-ils","peuvent-elles"
     ];
     return (tabVerbeAgent_1.indexOf(word.toLowerCase())!=-1);
 }
@@ -134,7 +134,7 @@ function isQuestion (words,callback){
     }
     else{
         for (var i in words){
-            if (isVerbeIsaQuestion(words[i])||isVerbeCaracQuestion(words[i])||isVerbeHasPartQuestion(words[i])||isVerbeAgent_1Question(words[i])){
+            if (words[i]!=="peut"&&(isVerbeIsaQuestion(words[i])||isVerbeCaracQuestion(words[i])||isVerbeHasPartQuestion(words[i])||isVerbeAgent_1Question(words[i]))){
                 callback(true,words);
                 return;
             }
@@ -145,7 +145,8 @@ function isQuestion (words,callback){
 }
 
 
- function checkComposedWord(words_tab,index_verbe,hashmap_mc,callback){
+ function checkComposedWord(words_tab,index_verbe,hashmap_mc,is_r_isa,callback){
+
 
     for (var i=0;i<index_verbe;i++){
         let mot = "";
@@ -164,8 +165,11 @@ function isQuestion (words,callback){
             break;
         }
     }
-
-    for (var j=index_verbe+1;j<words_tab.length;j++){
+    var j=index_verbe+1;
+    if (is_r_isa){
+        j++;
+    }
+    for (;j<words_tab.length;j++){
         let mot = "";
         j = Number(j);
 
@@ -181,7 +185,7 @@ function isQuestion (words,callback){
         }
 
     }
-    callback(words_tab,index_verbe);
+    callback(words_tab,index_verbe,j);
 }
 
 function isVerbe(word,callback){

@@ -38,7 +38,8 @@ function process(words,pseudo,hashmap_mc)
 			answers.sendBackAnswerError(pseudo,"Je n'ai pas réussi à détecter le verbe présent dans la phrase...");
 		}
 		else{
-			tools.checkComposedWord (words,index_verbe,hashmap_mc,function(words_tab,new_index_verbe){
+			var is_r_isa = (rel=="r_isa");
+			tools.checkComposedWord (words,index_verbe,hashmap_mc,is_r_isa,function(words_tab,new_index_verbe){
 
 				var fw_id = new_index_verbe+offset_fw;
 				var sw_id = new_index_verbe+offset_sw;
