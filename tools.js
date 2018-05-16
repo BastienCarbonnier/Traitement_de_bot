@@ -9,7 +9,7 @@ rezo_request= require("./rezo_request.js");
 function isArticle(word){
     var tabArticles = [
         "le","la","l","les", //article definis
-        "une","un","uns","unes","des","d", // article indefini
+        "une","un","uns","unes","des","d","de", // article indefini
         "du","de la","de l",// article partatifs
         "au","aux" // article def contracté
     ];

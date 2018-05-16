@@ -315,7 +315,7 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
     });
 };
 
-exports.sendBackAnswerAffirmation = function (pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab){
+exports.sendBackAnswerAffirmation = function (pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab,rel_neg){
 
     var fa = getArticleBeforeFirstWord(fw_id,words_tab); // first article
     var sa = getArticleBeforeSecondWord(sw_id,index_verbe,words_tab); // second article
@@ -331,6 +331,13 @@ exports.sendBackAnswerAffirmation = function (pseudo,fw,sw,fw_id,sw_id,index_ver
                 mes += "\n1er article : "+ fa + "  2ème article : "+sa;
                 mes += "\n1er mot : "+ fw + "  2ème mot : "+sw+"\n";
                 mes += "Relation : "+rel;
+                if (rel_neg){
+                    mes +="\nRelation négative";
+                }
+                else {
+                    mes +="\nRelation positive";
+                }
+
             }
             bot.sendMessage(mes,pseudo);
         }
