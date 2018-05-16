@@ -307,7 +307,7 @@ function isVerbeIsaAff(word){
 
 function isVerbeIsaNeg(word){
     var tabVerbeIsa = [
-        "n'est","peut-être","peut-etre"
+        "n'est","peut-être","peut-etre","n&apos;est"
     ];
     return (tabVerbeIsa.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }
@@ -334,7 +334,7 @@ function isVerbeHasPartAff(word){
 
 function isVerbeHasPartNeg(word){
     var tabVerbeHasPart = [
-        "n'a","possède","peut-avoir"
+        "n'a","possède","peut-avoir","n&apos;a"
     ];
     return (tabVerbeHasPart.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }
