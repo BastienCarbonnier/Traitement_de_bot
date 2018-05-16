@@ -320,7 +320,7 @@ function isVerbeCaracAff(word){
 }
 function isVerbeCaracNeg(word){
     var tabVerbeCarac = [
-        "n'est"
+        "n'est","n&apos;est"
     ];
     return (tabVerbeCarac.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }
