@@ -158,7 +158,7 @@ function findRelation(words,callback){
             rel_neg = true;
 			break;
 		}
-        else if (i+2 < words.length && isVerbeCaracNeg(w) && words[i+1]=="pas"){
+        else if (i+1 < words.length && isVerbeCaracNeg(w) && words[i+1]=="pas"){
             let temp = words[i+1];
             words.splice(i+1,1);
             words[i] = words[i]+" "+temp;
