@@ -44,7 +44,7 @@ function isVerbeCaracQuestion(word){
 
 function isVerbeHasPartQuestion(word){
     var tabVerbeHasPart = [
-        "a-t-il","a-t-elle","possède-t-il","possède-t-elle"
+        "a","a-t-il","a-t-elle","possède-t-il","possède-t-elle"
     ];
     return (tabVerbeHasPart.indexOf(word.toLowerCase())!=-1); //indexOf renvoie l'index du mot ou -1 s'il n'y est pas
 }

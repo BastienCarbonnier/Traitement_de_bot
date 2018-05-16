@@ -107,7 +107,7 @@ function getAdverbeAffDebutContractableAleatoire(){
 
 function getAdverbeNegDebutAleatoire(){
     var listAdverbeNegDebut = [
-        "En effet, ","Il se trouve que ","Non, ",""
+        "Il se trouve que ","Non, ",""
     ];
 
     var numRandom = Math.floor(Math.random()*listAdverbeNegDebut.length);
@@ -116,7 +116,7 @@ function getAdverbeNegDebutAleatoire(){
 }
 function getAdverbeNegDebutContractableAleatoire(){
     var listAdverbeNegDebut = [
-        "En effet, ","Il se trouve qu'","Non, ",""
+        "Il se trouve qu'","Non, ",""
     ];
 
     var numRandom = Math.floor(Math.random()*listAdverbeNegDebut.length);

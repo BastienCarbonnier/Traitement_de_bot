@@ -59,12 +59,13 @@ function process(words,pseudo,hashmap_mc)
 					"r_agent_1" : 24
 				};
 
+				/*
 				rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
 					answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive);
 				});
+				*/
 
-				/*
-				request.isRelationInBDD(fw,sw,relations(rel),function(err,res){
+				request.isRelationInBDD(fw,sw,relations[rel],function(err,res,rel_neg){
 					if (err){
 						rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,id_n3){
 							answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,id_n3);
@@ -72,16 +73,22 @@ function process(words,pseudo,hashmap_mc)
 					}
 					else{
 						if(res){
-							answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab);
+							if (rel_neg){
+								answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,0,words_tab);
+							}
+							else{
+								answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab);
+							}
+
 						}
 						else{
 							tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
-								answers.sendBackAnswer(fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+								answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
 							});
 						}
 					}
 				});
-				*/
+
 
 
 
