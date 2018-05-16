@@ -58,40 +58,72 @@ function process(words,pseudo,hashmap_mc)
 					"r_carac" : 17,
 					"r_agent_1" : 24
 				};
+				var listSujet=[
+					"il","ils","elle","elles"
+				];
+				if (listSujet.indexOf(fw.toLowerCase())!=-1){
+					request.getUserLastFaFw(pseudo,function(err,fa,fw){
+						if (!err){
+							if(fw != null){
+								
 
-				/*
-				rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
-					answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive);
-				});
-				*/
+								request.isRelationInBDD(fw,sw,relations[rel],function(err,res,rel_neg){
+									if (err){
+										rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
+											answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive);
+										});
+									}
+									else{
+										if(res=="true"){
+											if (rel_neg=="true"){
+												answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,0,words_tab,null,null,null,fa);
+											}
+											else{
 
-				request.isRelationInBDD(fw,sw,relations[rel],function(err,res,rel_neg){
-					if (err){
-						rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,id_n3){
-							answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,id_n3);
-						});
-					}
-					else{
-						if(res){
-							if (rel_neg){
-								answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,0,words_tab);
+												answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab,null,null,null,fa);
+											}
+
+										}
+										else{
+											tools.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
+												answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive);
+											});
+										}
+									}
+								});
 							}
 							else{
-								answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab);
+								answers.sendBackAnswerError(pseudo,"Je ne sais pas à quel mot fait référence le sujet donné.");
 							}
-
 						}
-						else{
-							tools.checkRelationFromRezoDump(fw,sw,rel,function(code){
-								answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab);
+					});
+				}
+				else{
+					request.isRelationInBDD(fw,sw,relations[rel],function(err,res,rel_neg){
+						if (err){
+							rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
+								answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive);
 							});
 						}
-					}
-				});
+						else{
+							if(res=="true"){
+								if (rel_neg=="true"){
+									answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,0,words_tab,null,null,null);
+								}
+								else{
 
+									answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab,null,null,null);
+								}
 
-
-
+							}
+							else{
+								tools.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
+									answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive);
+								});
+							}
+						}
+					});
+				}
 
 			});
 		}

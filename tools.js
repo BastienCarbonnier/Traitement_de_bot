@@ -134,7 +134,7 @@ function isQuestion (words,callback){
     }
     else{
         for (var i in words){
-            if (words[i]!=="peut"&&(isVerbeIsaQuestion(words[i])||isVerbeCaracQuestion(words[i])||isVerbeHasPartQuestion(words[i])||isVerbeAgent_1Question(words[i]))){
+            if (words[i]!=="peut"&&words[i]!=="a"&&(isVerbeIsaQuestion(words[i])||isVerbeCaracQuestion(words[i])||isVerbeHasPartQuestion(words[i])||isVerbeAgent_1Question(words[i]))){
                 callback(true,words);
                 return;
             }

@@ -193,7 +193,7 @@ function getPhraseErreurInconnu(){
     return listPhraseErreur[numRandom];
 }
 
-exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive){
+exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive,fa){
     var res = "";
     var verbe = "";
     var debug = "";
@@ -203,7 +203,7 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
         bot.sendMessage(reponse,pseudo);
         return;
     }
-    var fa = getArticleBeforeFirstWord(fw_id,words_tab); // first article
+    if(fa == null) fa = getArticleBeforeFirstWord(fw_id,words_tab); // first article
     var sa = getArticleBeforeSecondWord(sw_id,index_verbe,words_tab); // second article
 
     fa = (fa==-1 ? "" : lowerCaseFirstLetter(fa)+" ");
@@ -315,9 +315,9 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
     });
 };
 
-exports.sendBackAnswerAffirmation = function (pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab,rel_neg){
+exports.sendBackAnswerAffirmation = function (pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,result,words_tab,rel_neg,fa){
 
-    var fa = getArticleBeforeFirstWord(fw_id,words_tab); // first article
+    if (fa==null) fa = getArticleBeforeFirstWord(fw_id,words_tab); // first article
     var sa = getArticleBeforeSecondWord(sw_id,index_verbe,words_tab); // second article
 
     fa = (fa==-1 ? "inconnu" : lowerCaseFirstLetter(fa));

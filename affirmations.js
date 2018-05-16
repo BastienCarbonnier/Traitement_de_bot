@@ -49,12 +49,47 @@ function process(words,pseudo,hashmap_mc)
 
 
 
-                request.insertRelation(fw,sw,relations[rel],pseudo,10,neg,function(){
-                    answers.sendBackAnswerAffirmation(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,rel_neg);
-                });
+
+                var listSujet=[
+					"il","ils","elle","elles"
+				];
+				if (listSujet.indexOf(fw.toLowerCase())!=-1){
+					request.getUserLastFaFw(pseudo,function(err,fa,fw){
+						if (!err){
+							if(fw != null){
+								fw = fw;
+
+                                request.insertRelation(fa,fw,sw,relations[rel],pseudo,10,neg,function(){
+                                    answers.sendBackAnswerAffirmation(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,rel_neg,fa);
+                                });
+							}
+							else{
+								answers.sendBackAnswerError(pseudo,"Je ne sais pas à quel mot fait référence le sujet donné.");
+							}
+						}
+					});
+				}
+				else{
+                    var fa = getArticleBeforeFirstWord(fw_id,words_tab);
+                    request.insertRelation(fa,fw,sw,relations[rel],pseudo,10,neg,function(){
+                        answers.sendBackAnswerAffirmation(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,rel_neg,fa);
+                    });
+				}
 			});
 		}
 	});
+}
+
+function getArticleBeforeFirstWord(id_word,words_tab){
+    if (id_word>0){
+        if (tools.isArticle(words_tab[id_word-1]))
+            return words_tab[id_word-1];
+        else
+            return null;
+    }
+    else{
+        return null;
+    }
 }
 
 function findRelation(words,callback){
