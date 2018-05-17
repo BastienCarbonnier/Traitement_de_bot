@@ -54,7 +54,7 @@ function process(words,pseudo,hashmap_mc)
 					"il","ils","elle","elles"
 				];
 				if (listSujet.indexOf(fw.toLowerCase())!=-1){
-					request.getUserLastFaFw(pseudo,function(err,fa,fw){
+					request.getUserLastFaFw(pseudo,false,function(err,fa,fw){
 						if (!err){
 							if(fw != null){
 								fw = fw;

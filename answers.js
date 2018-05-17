@@ -328,9 +328,7 @@ exports.sendBackAnswerAffirmation = function (pseudo,fw,sw,fw_id,sw_id,index_ver
         if (!err){
             if(is_debug){
                 mes += "\n\nVoici les informations que j'ai compris :";
-                mes += "\n1er article : "+ fa + "  2ème article : "+sa;
-                mes += "\n1er mot : "+ fw + "  2ème mot : "+sw+"\n";
-                mes += "Relation : "+rel;
+                mes += "\n"+fw+" "+rel+" "+sw;
                 if (rel_neg){
                     mes +="\nRelation négative";
                 }

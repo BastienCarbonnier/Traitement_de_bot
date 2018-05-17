@@ -61,16 +61,15 @@ function process(words,pseudo,hashmap_mc)
 				var listSujet=[
 					"il","ils","elle","elles"
 				];
-				if (listSujet.indexOf(fw.toLowerCase())!=-1){
-					request.getUserLastFaFw(pseudo,function(err,fa,fw){
+
+				if (index_verbe==0){
+					request.getUserLastFaFw(pseudo,true,function(err,fa,fw){
 						if (!err){
 							if(fw != null){
-								
-
-								request.isRelationInBDD(fw,sw,relations[rel],function(err,res,rel_neg){
+								request.isRelationInBDD(fw,sw,relations[rel],fa,pseudo,function(err,res,rel_neg){
 									if (err){
 										rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
-											answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive);
+											answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive,fa);
 										});
 									}
 									else{
@@ -85,8 +84,43 @@ function process(words,pseudo,hashmap_mc)
 
 										}
 										else{
-											tools.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
-												answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive);
+											rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
+												answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive,fa);
+											});
+										}
+									}
+								});
+							}
+							else{
+								answers.sendBackAnswerError(pseudo,"Je ne sais pas à quel mot fait référence le sujet donné.");
+							}
+						}
+					});
+				}
+				else if (fw_id >=0 &&listSujet.indexOf(fw.toLowerCase())!=-1){
+					request.getUserLastFaFw(pseudo,true,function(err,fa,fw){
+						if (!err){
+							if(fw != null){
+								request.isRelationInBDD(fw,sw,relations[rel],fa,pseudo,function(err,res,rel_neg){
+									if (err){
+										rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
+											answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive,fa);
+										});
+									}
+									else{
+										if(res=="true"){
+											if (rel_neg=="true"){
+												answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,0,words_tab,null,null,null,fa);
+											}
+											else{
+
+												answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab,null,null,null,fa);
+											}
+
+										}
+										else{
+											rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
+												answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive,fa);
 											});
 										}
 									}
@@ -99,26 +133,27 @@ function process(words,pseudo,hashmap_mc)
 					});
 				}
 				else{
-					request.isRelationInBDD(fw,sw,relations[rel],function(err,res,rel_neg){
+					var fa = getArticleBeforeFirstWord(fw_id,words_tab);
+					request.isRelationInBDD(fw,sw,relations[rel],fa,pseudo,function(err,res,rel_neg){
 						if (err){
 							rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
-								answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive);
+								answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive,fa);
 							});
 						}
 						else{
 							if(res=="true"){
 								if (rel_neg=="true"){
-									answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,0,words_tab,null,null,null);
+									answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,0,words_tab,null,null,null,fa);
 								}
 								else{
 
-									answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab,null,null,null);
+									answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,1,words_tab,null,null,null,fa);
 								}
 
 							}
 							else{
-								tools.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
-									answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive);
+								rezo_request.checkRelationFromRezoDump(fw,sw,rel,function(code,inference,n3,rs_positive,re_positive){
+									answers.sendBackAnswerWithInference(pseudo,fw,sw,fw_id,sw_id,index_verbe,rel,code,words_tab,n3,rs_positive,re_positive,fa);
 								});
 							}
 						}
@@ -128,6 +163,17 @@ function process(words,pseudo,hashmap_mc)
 			});
 		}
 	});
+}
+function getArticleBeforeFirstWord(id_word,words_tab){
+    if (id_word>0){
+        if (tools.isArticle(words_tab[id_word-1]))
+            return words_tab[id_word-1];
+        else
+            return null;
+    }
+    else{
+        return null;
+    }
 }
 /**
 * Find relation by checking the verb in the words table
