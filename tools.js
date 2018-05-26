@@ -4,6 +4,7 @@ var rp          = require('request-promise'),
 cheerio     = require('cheerio'),
 windows1252 = require('windows-1252'),
 fs 			= require("fs"),
+bot         = require('../server.js'),
 rezo_request= require("./rezo_request.js");
 
 function isArticle(word){
@@ -89,6 +90,10 @@ function initialization (callback){
 
     callback(hashmap_mc);
 
+}
+
+function reactivateBot(){
+    setInterval(function(){ bot.sendMessage("reactivate bot","Bastien Carbonnier"); }, 60*60*12);
 }
 function isQuestion (words,callback){
     if (words.indexOf("?") != -1 ){
