@@ -213,10 +213,10 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
 
     if (n3 != null){
         if (rs_positive){
-            fin_deduction = " car "+fa+fw+" "+getVerbeAffIsaOrCaracAleatoire()+" "+fa+n3;
+            fin_deduction = " car "+fa+fw+" "+getVerbeAffIsaOrCaracAleatoire()+" "+fa+n3 +" et "+fa+n3;
         }
         else{
-            fin_deduction = " car "+fa+fw+" "+getVerbeNegIsaOrCaracAleatoire()+" "+fa+n3;
+            fin_deduction = " car "+fa+fw+" "+getVerbeNegIsaOrCaracAleatoire()+" "+fa+n3+" et "+fa+n3;
         }
         if(re_positive && rs_positive){
             code = 1;
@@ -253,6 +253,7 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
             else {
                 res = "La réponse pour cette relation n'a pas été implémenté.";
             }
+            fin_deduction += " "+verbe+ sa+" "+sw;
             res += fa +fw+ " " +
                    verbe +
                    sa + " " + sw;
@@ -282,6 +283,7 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
             else {
                 res = "La réponse pour cette relation n'a pas été implémenté.";
             }
+            fin_deduction += " "+verbe+ sa+" "+sw;
             res += fa +fw+ " " +
                    verbe +
                    sa + " " + sw;
@@ -302,9 +304,7 @@ exports.sendBackAnswerWithInference = function(pseudo,fw,sw,fw_id,sw_id,index_ve
         if (!err){
             if(is_debug){
                 mes += "\n\nVoici les informations que j'ai compris :";
-                mes += "\n1er article : "+ fa + "  2ème article : "+sa;
-                mes += "\n1er mot : "+ fw + "  2ème mot : "+sw+"\n";
-                mes += "Relation : "+rel;
+                mes += "\n"+fw+" "+rel+" "+sw;
 
                 if (n3 != null){
                     mes += "\nRelation inférée : "+n3;
